@@ -31,22 +31,22 @@ struct CarbonKgRatios {
     
 }
 
-struct CarbonEquivalent{
-    let carbonKg: Double
+public struct CarbonEquivalent{
+    public let carbonKg: Double
     
-    init(carbonKg: Double) {
+    public init(carbonKg: Double) {
         self.carbonKg = carbonKg
     }
     
-    init(beefMeal: Double) {
+    public init(beefMeal: Double) {
         carbonKg = beefMeal / CarbonKgRatios.beefMeal
     }
     
-    init(carKm: Double) {
+    public init(carKm: Double) {
         carbonKg = carKm / CarbonKgRatios.carKm
     }
     
-    var beefMeal: Double {
+    public var beefMeal: Double {
         return carbonKg * CarbonKgRatios.beefMeal
     }
 }
