@@ -31,7 +31,7 @@ struct CarbonKgRatios {
     
 }
 
-struct CarbonEquivalent{
+public struct CarbonEquivalent{
     let carbonKg: Double
     
     init(carbonKg: Double) {
