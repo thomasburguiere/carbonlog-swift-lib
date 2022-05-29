@@ -1,5 +1,5 @@
 import XCTest
-@testable import carbonlog_lib
+@testable import CarbonLogLib
 
 final class carbonlog_libTests: XCTestCase {
     func testExample() throws {
