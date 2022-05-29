@@ -50,11 +50,11 @@ public struct CarbonEquivalent{
     public init(bottledWaterLiter: Double) {carbonKg = bottledWaterLiter / CarbonKgRatios.bottledWaterLiter}
     
     public var beefMeal: Double {
-        get { carbonKg * CarbonKgRatios.beefMeal }
+        get {carbonKg * CarbonKgRatios.beefMeal}
         set(beefMeal) {carbonKg = beefMeal / CarbonKgRatios.beefMeal}
     }
     public var carKm: Double {
-        get { carbonKg * CarbonKgRatios.carKm }
+        get {carbonKg * CarbonKgRatios.carKm}
         set(carKm) {carbonKg = carKm / CarbonKgRatios.carKm}
     }
     public var chickenMeal: Double {
