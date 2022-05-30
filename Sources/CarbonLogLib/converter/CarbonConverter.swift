@@ -1,6 +1,6 @@
 import Foundation
 
-struct CarbonKgRatios {
+fileprivate struct CarbonKgRatios {
     static let beefMeal = 0.14
     static let carKm = 5.18
     static let chickenMeal = 0.63
