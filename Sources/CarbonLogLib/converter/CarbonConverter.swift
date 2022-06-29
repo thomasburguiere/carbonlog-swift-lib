@@ -4,6 +4,8 @@ fileprivate struct CarbonKgRatios {
     static let beefMeal = 0.14
     static let carKm = 5.18
     static let chickenMeal = 0.63
+    static let chickenKg = 0.05494505495 // based on https://www.co2everything.com/co2e-of/chicken
+    static let eggsKg = 0.1886792453 // based on https://www.co2everything.com/co2e-of/eggs
     static let veggieMeal = 1.96
     static let heatingDayGas = 0.54
     static let planeKm = 5.38
@@ -32,6 +34,8 @@ public struct CarbonEquivalent{
     public init(beefMeal: Double) { carbonKg = beefMeal / CarbonKgRatios.beefMeal }
     public init(carKm: Double) { carbonKg = carKm / CarbonKgRatios.carKm }
     public init(chickenMeal: Double) {carbonKg = chickenMeal / CarbonKgRatios.chickenMeal}
+    public init(chickenKg: Double) {carbonKg = chickenKg / CarbonKgRatios.chickenKg}
+    public init(eggsKg: Double) {carbonKg = eggsKg / CarbonKgRatios.eggsKg}
     public init(veggieMeal: Double) {carbonKg = veggieMeal / CarbonKgRatios.veggieMeal}
     public init(heatingDayGas: Double) {carbonKg = heatingDayGas / CarbonKgRatios.heatingDayGas}
     public init(planeKm: Double) {carbonKg = planeKm / CarbonKgRatios.planeKm}
@@ -60,6 +64,14 @@ public struct CarbonEquivalent{
     public var chickenMeal: Double {
         get {carbonKg * CarbonKgRatios.chickenMeal}
         set(chickenMeal) {carbonKg = chickenMeal / CarbonKgRatios.chickenMeal}
+    }
+    public var chickenKg: Double {
+        get {carbonKg * CarbonKgRatios.chickenKg}
+        set(chickenKg) {carbonKg = chickenKg / CarbonKgRatios.chickenKg}
+    }
+    public var eggsKg: Double {
+        get {carbonKg * CarbonKgRatios.eggsKg}
+        set(eggsKg) {carbonKg = eggsKg / CarbonKgRatios.eggsKg}
     }
     public var veggieMeal: Double {
         get {carbonKg * CarbonKgRatios.veggieMeal}

@@ -12,6 +12,13 @@ final class CarbonConverterTests: XCTestCase {
         
         ce = CarbonEquivalent(carKm: 5.18)
         XCTAssertEqual(ce.carbonKg.round(to:2), 1.0)
+        
+        ce = CarbonEquivalent(chickenKg: 0.1)
+        XCTAssertEqual(ce.carbonKg.round(to:2), 1.82)
+        
+        
+        ce = CarbonEquivalent(eggsKg: 0.1)
+        XCTAssertEqual(ce.carbonKg.round(to:2), 0.53)
     }
 }
 
