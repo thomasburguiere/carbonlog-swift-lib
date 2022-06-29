@@ -37,13 +37,10 @@ public struct CarbonLog {
     }
     
     public func getCurrentYearCarbonKgs() -> Double {
-        let currentYear = cal.component(Calendar.Component.year, from: Date())
+        let currentYear = cal.component(.year, from: Date())
         
         return measurements
-            .filter{ m in
-                let measurementYear = cal.component(Calendar.Component.year, from: m.date)
-                return measurementYear == currentYear
-            }
+            .filter{ cal.component(.year, from: $0.date) == currentYear }
             .map {$0.carbonKg}
             .reduce(0.0) { acc, next in
                 acc + next
