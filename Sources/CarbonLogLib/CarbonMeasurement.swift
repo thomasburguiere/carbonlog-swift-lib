@@ -1,6 +1,6 @@
 import Foundation
 
-public class CarbonMeasurement {
+public struct CarbonMeasurement {
     
     public let date: Date
     public let carbonKg: Double

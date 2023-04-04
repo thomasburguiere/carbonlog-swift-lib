@@ -41,7 +41,6 @@ public struct CarbonEquivalent{
         self.carbonKg = carbonKg
     }
     
-    public Struct
     
     public init(carKm: Double) { carbonKg = carKm / CarbonKgRatios.Travel.carKm }
     public init(planeKm: Double) {carbonKg = planeKm / CarbonKgRatios.Travel.planeKm}
