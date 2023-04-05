@@ -1,53 +1,55 @@
-
 import Foundation
 
-fileprivate let cal: Calendar = Calendar(identifier: .gregorian)
+private let cal: Calendar = Calendar(identifier: .gregorian)
 
 public struct CarbonLog {
-    
-    public let measurements: Array<CarbonMeasurement>
-    
+
+    public let measurements: [CarbonMeasurement]
+
     public init() {
         self.measurements = Array()
     }
-    
-    public init(with measurements: Array<CarbonMeasurement>) {
+
+    public init(with measurements: [CarbonMeasurement]) {
         self.measurements = measurements
     }
-    
-    public func getRangeCarbonKgs(from:Date, to:Date = Date(), inclusive: Bool = false) -> Double {
-        
+
+    public func getRangeCarbonKgs(from: Date, to: Date = Date(), inclusive: Bool = false) -> Double {
+
         let filter: (CarbonMeasurement) -> Bool
-        if (!inclusive) {
+        if !inclusive {
             filter = { (cm: CarbonMeasurement) -> Bool in
                 cm.date.compare(from).rawValue > 0 && cm.date.compare(to).rawValue < 0
             }
-        } else {
+        }
+        else {
             filter = { (cm: CarbonMeasurement) -> Bool in
                 cm.date.compare(from).rawValue >= 0 && cm.date.compare(to).rawValue <= 0
             }
         }
-        
-        return measurements
+
+        return
+            measurements
             .filter(filter)
-            .map{ $0.carbonKg }
-            .reduce(0.0) { acc, next in
+            .map { $0.carbonKg }
+            .reduce(0.0) { (acc: Double, next: Double) in
                 acc + next
             }
     }
-    
+
     public func getCurrentYearCarbonKgs() -> Double {
         let currentYear = cal.component(.year, from: Date())
-        
-        return measurements
-            .filter{ cal.component(.year, from: $0.date) == currentYear }
-            .map {$0.carbonKg}
-            .reduce(0.0) { acc, next in
+
+        return
+            measurements
+            .filter { cal.component(.year, from: $0.date) == currentYear }
+            .map { $0.carbonKg }
+            .reduce(0.0) { (acc: Double, next: Double) in
                 acc + next
             }
     }
-    
-    public func add(measurements: Array<CarbonMeasurement>) -> CarbonLog {
+
+    public func add(measurements: [CarbonMeasurement]) -> CarbonLog {
         return CarbonLog(with: self.measurements + measurements)
     }
 }
