@@ -1,6 +1,8 @@
 import Foundation
 
-public struct CarbonMeasurement {
+public struct CarbonMeasurement: CustomStringConvertible {
+    public var description: String { return String(format: "%f", self.carbonKg) + " at " + self.date.description}
+    
     
     public let date: Date
     public let carbonKg: Double
@@ -16,8 +18,12 @@ public struct CarbonMeasurement {
     }
     
     public init(by carbonEq: CarbonEquivalent) {
+        self.init(by: carbonEq, at: Date())
+    }
+    
+    public init(by carbonEq: CarbonEquivalent, at date:Date) {
         self.carbonKg = carbonEq.carbonKg
-        self.date = Date()
+        self.date = date
     }
     
     public var equivalent: CarbonEquivalent { CarbonEquivalent(carbonKg: self.carbonKg)}
