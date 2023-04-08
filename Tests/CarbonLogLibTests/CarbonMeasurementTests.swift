@@ -14,6 +14,23 @@ final class CarbonMeasurementTests: XCTestCase {
         ms = CarbonMeasurement(by: CarbonEquivalent(planeKm: 2000.0), at: date1)
         XCTAssertEqual(ms.carbonKg.round(to: 2), 371.75)
 
-        XCTAssertTrue(ms.description.contains("371.747212 at 2022-04-06"))
+        XCTAssertTrue(
+            ms.description.starts(with: "371.747212 at 2022-04-06"),
+            "expected description to start with \"371.747212 at 2022-04-06\", actual \"\(ms.description)\""
+        )
+
+        let now = Date()
+        ms = CarbonMeasurement(carbonKg: 2.5)
+        XCTAssertTrue(
+            ms.description.starts(with: "2.5"),
+            "expected description to start with \"2.5\", actual: \"\(ms.description)\""
+        )
+        XCTAssertTrue(ms.date >= now)
+
+        ms = CarbonMeasurement(by: CarbonEquivalent(planeKm: 2000.0))
+        XCTAssertEqual(ms.carbonKg.round(to: 2), 371.75)
+
+        ms = CarbonMeasurement(carbonKg: 371.75)
+        XCTAssertEqual(ms.equivalent.planeKm.round(to: 0), 2000.00)
     }
 }
