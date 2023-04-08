@@ -2,7 +2,7 @@ import Foundation
 
 private let cal: Calendar = Calendar(identifier: .gregorian)
 
-public struct CarbonLog {
+public struct CarbonLog: Codable {
 
     public let measurements: [CarbonMeasurement]
 
