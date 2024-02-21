@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import CarbonLogLib
 
 final class CarbonConverterTests: XCTestCase {
@@ -7,17 +8,15 @@ final class CarbonConverterTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
 
-        
         var ce = CarbonEquivalent(carbonKg: 1.0)
-        
+
         XCTAssertEqual(ce.beefMeal, 0.14)
-        
-        ce = CarbonEquivalent(beefMeal:  1)
-        XCTAssertEqual(ce.carbonKg.round(to:2), 7.14)
-        
-        
+
+        ce = CarbonEquivalent(beefMeal: 1)
+        XCTAssertEqual(ce.carbonKg.round(to: 2), 7.14)
+
         ce = CarbonEquivalent(carKm: 5.18)
-        XCTAssertEqual(ce.carbonKg.round(to:2), 1.0)
+        XCTAssertEqual(ce.carbonKg.round(to: 2), 1.0)
     }
 }
 

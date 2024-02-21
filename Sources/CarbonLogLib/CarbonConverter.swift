@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Thomas Burguiere on 28.05.22.
 //
@@ -8,7 +8,7 @@
 import Foundation
 
 struct CarbonKgRatios {
-    
+
     static let beefMeal = 0.14
     static let chickenMeal = 0.63
     static let veggieMeal = 1.96
@@ -28,26 +28,25 @@ struct CarbonKgRatios {
     static let houseTrashKg = 2.59
     static let tapWaterLiters = 7575.76
     static let bottledWaterLiter = 2.21
-    
+
 }
 
-public struct CarbonEquivalent{
+public struct CarbonEquivalent {
     let carbonKg: Double
-    
+
     init(carbonKg: Double) {
         self.carbonKg = carbonKg
     }
-    
+
     init(beefMeal: Double) {
         carbonKg = beefMeal / CarbonKgRatios.beefMeal
     }
-    
+
     init(carKm: Double) {
         carbonKg = carKm / CarbonKgRatios.carKm
     }
-    
+
     var beefMeal: Double {
         return carbonKg * CarbonKgRatios.beefMeal
     }
 }
-
