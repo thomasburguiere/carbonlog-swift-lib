@@ -1,5 +1,5 @@
 import Foundation
-import XCTest
+import Testing
 
 @testable import CarbonLogLib
 
@@ -21,8 +21,8 @@ let date_2021 =
     calendar
     .date(from: DateComponents(year: 2021, month: 1, day: 4))!
 
-public class CarbonLogTests: XCTestCase {
-    func test_get_results_when_in_range() {
+public struct CarbonLogTests {
+    @Test func test_get_results_when_in_range() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -32,10 +32,10 @@ public class CarbonLogTests: XCTestCase {
         let result = log.getRangeCarbonKgs(from: date1, to: date4)
 
         // then
-        XCTAssertEqual(result, 5.0)
+        #expect(result == 5.0)
     }
 
-    func test_get_results_when_in_range_with_added_data() {
+    @Test func test_get_results_when_in_range_with_added_data() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -49,10 +49,10 @@ public class CarbonLogTests: XCTestCase {
         let result = updatedLog.getRangeCarbonKgs(from: date1, to: date4)
 
         // then
-        XCTAssertEqual(result, 16.0)
+        #expect(result == 16.0)
     }
 
-    func test_get_nothing_when_outside_range() {
+    @Test func test_get_nothing_when_outside_range() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -62,10 +62,10 @@ public class CarbonLogTests: XCTestCase {
         let result = log.getRangeCarbonKgs(from: date4, to: date4)
 
         // then
-        XCTAssertEqual(result, 0.0)
+        #expect(result == 0.0)
     }
 
-    func test_get_nothing_when_search_range_exclusive() {
+    @Test func test_get_nothing_when_search_range_exclusive() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -75,10 +75,10 @@ public class CarbonLogTests: XCTestCase {
         let result = log.getRangeCarbonKgs(from: date3, to: date4)
 
         // then
-        XCTAssertEqual(result, 0.0)
+        #expect(result == 0.0)
     }
 
-    func test_get_result_when_search_range_inclusive() {
+    @Test func test_get_result_when_search_range_inclusive() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -88,10 +88,10 @@ public class CarbonLogTests: XCTestCase {
         let result = log.getRangeCarbonKgs(from: date3, to: date4, inclusive: true)
 
         // then
-        XCTAssertEqual(result, 3.0)
+        #expect(result == 3.0)
     }
 
-    func test_get_result_for_current_year() {
+    @Test func test_get_result_for_current_year() {
         // given
         let todayDate = Date()
         let cm2 = CarbonMeasurement(kg: 2.0, at: todayDate)
@@ -102,6 +102,6 @@ public class CarbonLogTests: XCTestCase {
         let result = log.getCurrentYearCarbonKgs()
 
         // then
-        XCTAssertEqual(result, cm2.carbonKg)
+        #expect(result == cm2.carbonKg)
     }
 }
