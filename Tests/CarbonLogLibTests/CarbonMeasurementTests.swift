@@ -16,15 +16,15 @@ struct CarbonMeasurementTests {
         #expect(ms.carbonKg.round(to: 2) == 371.75)
 
         #expect(
-            ms.description.starts(with: "371.747212 at 2022-04-06")//,
-            // "expected description to start with \"371.747212 at 2022-04-06\", actual \"\(ms.description)\""
+            ms.description.starts(with: "371.747212 at 2022-04-06"),
+            "expected description to start with \"371.747212 at 2022-04-06\", actual \"\(ms.description)\""
         )
 
         let now = Date()
         ms = CarbonMeasurement(carbonKg: 2.5)
         #expect(
-            ms.description.starts(with: "2.5")//,
-            // "expected description to start with \"2.5\", actual: \"\(ms.description)\""
+            ms.description.starts(with: "2.5"),
+            "expected description to start with \"2.5\", actual: \"\(ms.description)\""
         )
         #expect(ms.date >= now)
 
