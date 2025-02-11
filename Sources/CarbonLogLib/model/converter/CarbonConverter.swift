@@ -26,6 +26,11 @@ private struct CarbonKgRatios {
         static let tv45Inch = 0.003
     }
 
+    fileprivate struct Energy {
+        static let nuclearKWh = 1/0.14
+        static let hydroKWh = 1/0.04
+    }
+
     static let denimPants = 0.043
     static let pocketBook = 0.085
     static let sofa = 0.005
@@ -64,6 +69,8 @@ public struct CarbonEquivalent {
     public init(tv45Inch: Double) { carbonKg = tv45Inch / CarbonKgRatios.HighTech.tv45Inch }
     public init(a4PaperSheet: Double) { carbonKg = a4PaperSheet / CarbonKgRatios.a4PaperSheet }
     public init(houseTrashKg: Double) { carbonKg = houseTrashKg / CarbonKgRatios.houseTrashKg }
+    public init(hydroKWh: Double) { carbonKg = hydroKWh / CarbonKgRatios.Energy.hydroKWh }
+    public init(nuclearKWh: Double) { carbonKg = nuclearKWh / CarbonKgRatios.Energy.nuclearKWh }
 
     public var carKm: Double {
         get { carbonKg * CarbonKgRatios.Travel.carKm }

@@ -3,6 +3,8 @@ import Testing
 
 @testable import CarbonLogLib
 
+private let calendar: Calendar = Calendar(identifier: .gregorian)
+
 struct CarbonMeasurementTests {
     let date1 =
         calendar
@@ -21,7 +23,7 @@ struct CarbonMeasurementTests {
         )
 
         let now = Date()
-        ms = CarbonMeasurement(carbonKg: 2.5)
+        ms = CarbonMeasurement(kg: 2.5)
         #expect(
             ms.description.starts(with: "2.5"),
             "expected description to start with \"2.5\", actual: \"\(ms.description)\""
@@ -31,7 +33,7 @@ struct CarbonMeasurementTests {
         ms = CarbonMeasurement(by: CarbonEquivalent(planeKm: 2000.0))
         #expect(ms.carbonKg.round(to: 2) == 371.75)
 
-        ms = CarbonMeasurement(carbonKg: 371.75)
+        ms = CarbonMeasurement(kg: 371.75)
         #expect(ms.equivalent.planeKm.round(to: 0) == 2000.00)
     }
 }

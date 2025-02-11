@@ -3,36 +3,38 @@ import Testing
 
 @testable import CarbonLogLib
 
-let calendar: Calendar = Calendar(identifier: .gregorian)
+private let calendar: Calendar = Calendar(identifier: .gregorian)
 
-let date1 =
+private let date1 =
     calendar
     .date(from: DateComponents(year: 2022, month: 1, day: 1))!
-let date2 =
+private let date2 =
     calendar
     .date(from: DateComponents(year: 2022, month: 1, day: 2))!
-let date3 =
+private let date3 =
     calendar
     .date(from: DateComponents(year: 2022, month: 1, day: 3))!
-let date4 =
+private let date4 =
     calendar
     .date(from: DateComponents(year: 2022, month: 1, day: 4))!
-let date_2021 =
+private let date_2021 =
     calendar
     .date(from: DateComponents(year: 2021, month: 1, day: 4))!
 
 struct CarbonLogTests {
 
-    @Test func should_init_with_default_id_and_empty_measurements() async throws {
+    @Test
+    func should_init_with_default_id_and_empty_measurements() async throws {
         // when
         let log = CarbonLog()
 
         // then
-        #expect(log.id.count >= 0 , "expected log id '\(log.id)', to be non empty string")
+        #expect(log.id.count >= 0, "expected log id '\(log.id)', to be non empty string")
         #expect(log.measurements.count == 0, "expected log measurments to be empty array")
     }
 
-    @Test func test_get_results_when_in_range() {
+    @Test("should get results when in range")
+    func should_get_results_when_in_range() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -45,7 +47,8 @@ struct CarbonLogTests {
         #expect(result == 5.0)
     }
 
-    @Test func test_get_results_when_in_range_with_added_data() {
+    @Test("should get results when in range with added data")
+    func should_get_results_when_in_range_with_added_data() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -62,7 +65,8 @@ struct CarbonLogTests {
         #expect(result == 16.0)
     }
 
-    @Test func test_get_nothing_when_outside_range() {
+    @Test("should get nothing when outside range")
+    func should_get_nothing_when_outside_range() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -75,7 +79,8 @@ struct CarbonLogTests {
         #expect(result == 0.0)
     }
 
-    @Test func test_get_nothing_when_search_range_exclusive() {
+    @Test("should get nothing when search range exclusive")
+    func should_get_nothing_when_search_range_exclusive() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -88,7 +93,8 @@ struct CarbonLogTests {
         #expect(result == 0.0)
     }
 
-    @Test func test_get_result_when_search_range_inclusive() {
+    @Test("should get result when search range inclusive")
+    func should_get_result_when_search_range_inclusive() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
@@ -101,7 +107,8 @@ struct CarbonLogTests {
         #expect(result == 3.0)
     }
 
-    @Test func test_get_result_for_current_year() {
+    @Test
+    func should_get_result_for_current_year() {
         // given
         let todayDate = Date()
         let cm2 = CarbonMeasurement(kg: 2.0, at: todayDate)
