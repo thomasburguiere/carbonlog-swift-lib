@@ -21,7 +21,7 @@ let date_2021 =
     calendar
     .date(from: DateComponents(year: 2021, month: 1, day: 4))!
 
-public struct CarbonLogTests {
+struct CarbonLogTests {
     @Test func test_get_results_when_in_range() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
