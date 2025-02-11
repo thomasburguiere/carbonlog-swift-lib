@@ -22,6 +22,16 @@ let date_2021 =
     .date(from: DateComponents(year: 2021, month: 1, day: 4))!
 
 struct CarbonLogTests {
+
+    @Test func should_init_with_default_id_and_empty_measurements() async throws {
+        // when
+        let log = CarbonLog()
+
+        // then
+        #expect(log.id.count >= 0 , "expected log id '\(log.id)', to be non empty string")
+        #expect(log.measurements.count == 0, "expected log measurments to be empty array")
+    }
+
     @Test func test_get_results_when_in_range() {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
