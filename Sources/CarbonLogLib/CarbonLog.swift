@@ -32,9 +32,7 @@ public struct CarbonLog: Codable {
             measurements
             .filter(filter)
             .map { $0.carbonKg }
-            .reduce(0.0) { (acc: Double, next: Double) in
-                acc + next
-            }
+            .reduce(0.0) { $0 + $1 }
     }
 
     public func getCurrentYearCarbonKgs() -> Double {
@@ -44,9 +42,7 @@ public struct CarbonLog: Codable {
             measurements
             .filter { cal.component(.year, from: $0.date) == currentYear }
             .map { $0.carbonKg }
-            .reduce(0.0) { (acc: Double, next: Double) in
-                acc + next
-            }
+            .reduce(0.0) { $0 + $1 }
     }
 
     public func add(measurements: [CarbonMeasurement]) -> CarbonLog {
