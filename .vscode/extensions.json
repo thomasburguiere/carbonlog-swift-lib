@@ -1,0 +1,26 @@
+{
+  "recommendations": [
+    "swiftlang.swift-vscode",
+    "vknabel.vscode-apple-swift-format",
+    "ms-azuretools.vscode-docker",
+    "vadimcn.vscode-lldb",
+    "github.vscode-github-actions",
+    "github.vscode-pull-request-github",
+    "anweber.vscode-httpyac",
+    "soulcode.vscode-unwanted-extensions"
+  ],
+  "unwantedRecommendations": [
+    "angular.ng-template",
+    "dbaeumer.vscode-eslint",
+    "christian-kohler.npm-intellisense",
+    "tauri-apps.tauri-vscode",
+    "antfu.vite",
+    "cucumberopen.cucumber-official",
+    "alexkrechik.cucumberautocomplete",
+    "vscjava.vscode-java-debug",
+    "ms-vscode-remote.remote-containers",
+    "gitlab.gitlab-workflow",
+    "golang.go",
+    "vscjava.vscode-gradle"
+  ]
+}
