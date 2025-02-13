@@ -55,8 +55,8 @@ struct CsvStuff {
     @Test("shoud dump measurement to CSV row")
     func shouldGenerateMeasurementCsv() throws {
         // when
-        let result2 = cm2.toCsvString()
-        let result3 = cm3.toCsvString()
+        let result2 = cm2.csvString
+        let result3 = cm3.csvString
 
         // then
         #expect(result2 == "2022-01-02T12:00:00Z,2.0")
@@ -87,7 +87,7 @@ struct CsvStuff {
         let log = CarbonLog(with: [cm2, cm3])
 
         // when
-        let result = log.toCsvString()
+        let result = log.csvString
 
         // then
         let expected =
