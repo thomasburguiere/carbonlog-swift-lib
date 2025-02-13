@@ -14,21 +14,17 @@ private let date3 =
     calendar
     .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 3, hour: 12))!
 
-let inFname = "test-input"
-
 class CarbonLogPersistenceServiceTests {
-
-    let inputFilePathURL = Bundle.module.url(forResource: inFname, withExtension: "csv")
 
     private let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
     private let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
 
     @Test("Should persist and load CarbonLog")
     func persistAndLoadLog() async throws {
-        
+
         let tempFolderURL = FileManager.default.temporaryDirectory
         let outfileURL = tempFolderURL.appending(component: "test.csv")
-        
+
         let log = CarbonLog(with: [cm2, cm3])
         let csvService = CsvPersistenceService(csvURL: outfileURL)
 
@@ -39,15 +35,17 @@ class CarbonLogPersistenceServiceTests {
         // then
         #expect(loadedLog.measurements.count == 2)
     }
+
     @Test("Should load CarbonLog from CSV")
     func loadCsvLog() async throws {
-      let csvService = CsvPersistenceService(csvURL: inputFilePathURL!)
-      let loadedLog = try #require(await csvService.load(id: "noop"))
+        let inputFilePathURL = Bundle.module.url(forResource: "test-input", withExtension: "csv")
+        let csvService = CsvPersistenceService(csvURL: inputFilePathURL!)
+        let loadedLog = try #require(await csvService.load(id: "noop"))
 
-      // then
-      #expect(loadedLog.measurements.count == 2)
+        // then
+        #expect(loadedLog.measurements.count == 2)
     }
-    
+
 }
 
 struct CsvStuff {
