@@ -5,13 +5,15 @@ private let cal: Calendar = Calendar(identifier: .gregorian)
 public struct CarbonLog: Codable {
 
     public let measurements: [CarbonMeasurement]
+    public let id: String
 
     public init() {
-        self.measurements = Array()
+        self.init(with: [])
     }
 
     public init(with measurements: [CarbonMeasurement]) {
         self.measurements = measurements
+        self.id = UUID().uuidString
     }
 
     public func getRangeCarbonKgs(from: Date, to: Date = Date(), inclusive: Bool = false) -> Double {

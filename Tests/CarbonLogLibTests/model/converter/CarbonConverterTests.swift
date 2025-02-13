@@ -20,6 +20,12 @@ struct CarbonConverterTests {
 
         ce = CarbonEquivalent(eggsKg: 0.1)
         #expect(ce.carbonKg.round(to: 2) == 0.53)
+
+        ce = CarbonEquivalent(nuclearKWh: 100)
+        #expect(ce.carbonKg.round(to: 2) == 14)
+
+        ce = CarbonEquivalent(hydroKWh: 100)
+        #expect(ce.carbonKg.round(to: 2) == 4)
     }
 }
 
