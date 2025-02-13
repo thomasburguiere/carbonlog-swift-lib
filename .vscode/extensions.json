@@ -10,17 +10,28 @@
     "soulcode.vscode-unwanted-extensions"
   ],
   "unwantedRecommendations": [
-    "angular.ng-template",
-    "dbaeumer.vscode-eslint",
-    "christian-kohler.npm-intellisense",
-    "tauri-apps.tauri-vscode",
-    "antfu.vite",
-    "cucumberopen.cucumber-official",
     "alexkrechik.cucumberautocomplete",
-    "vscjava.vscode-java-debug",
-    "ms-vscode-remote.remote-containers",
+    "angular.ng-template",
+    "antfu.vite",
+    "bradlc.vscode-tailwindcss",
+    "christian-kohler.npm-intellisense",
+    "cucumberopen.cucumber-official",
+    "dbaeumer.vscode-eslint",
     "gitlab.gitlab-workflow",
     "golang.go",
-    "vscjava.vscode-gradle"
+    "harryhopkinson.vs-code-runner",
+    "james-yu.latex-workshop",
+    "ms-playwright.playwright",
+    "ms-vscode-remote.remote-containers",
+    "nuxtr.nuxt-vscode-extentions",
+    "nuxtr.nuxtr-vscode",
+    "reditorsupport.r",
+    "rust-lang.rust-analyzer",
+    "tauri-apps.tauri-vscode",
+    "vitest.explorer",
+    "vscjava.vscode-gradle",
+    "vscjava.vscode-java-debug",
+    "vue.volar",
+    "yoavbls.pretty-ts-errors"
   ]
 }
