@@ -14,11 +14,11 @@ struct CarbonMeasurementTests {
 
         #expect(ms.carbonKg == 0.0)
 
-        ms = CarbonMeasurement(by: CarbonEquivalent(planeKm: 2000.0), at: date1)
-        #expect(ms.carbonKg.round(to: 2) == 371.75)
+        ms = CarbonMeasurement(by: CarbonEquivalent(type: .planeKm, amount: 2000.0), at: date1)
+        #expect(ms.carbonKg.round(to: 2) == 292)
 
         #expect(
-            ms.description.starts(with: "371.747212 at 2022-04-06"),
+            ms.description.starts(with: "292.00 at 2022-04-06"),
             "expected description to start with \"371.747212 at 2022-04-06\", actual \"\(ms.description)\""
         )
 
@@ -30,10 +30,10 @@ struct CarbonMeasurementTests {
         )
         #expect(ms.date >= now)
 
-        ms = CarbonMeasurement(by: CarbonEquivalent(planeKm: 2000.0))
-        #expect(ms.carbonKg.round(to: 2) == 371.75)
+        ms = CarbonMeasurement(by: CarbonEquivalent(type: .planeKm, amount: 2000.0))
+        #expect(ms.carbonKg.round(to: 2) == 292.0)
 
-        ms = CarbonMeasurement(kg: 371.75)
-        #expect(ms.equivalent.planeKm.round(to: 0) == 2000.00)
+        ms = CarbonMeasurement(kg: 292.0)
+        #expect(ms.equivalent.asType(.planeKm).round(to: 0) == 2000.00)
     }
 }
