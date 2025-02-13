@@ -27,8 +27,8 @@ private struct CarbonKgRatios {
     }
 
     fileprivate struct Energy {
-        static let nuclearKWh = 1/0.14
-        static let hydroKWh = 1/0.04
+        static let nuclearKWh = 1 / 0.14
+        static let hydroKWh = 1 / 0.04
     }
 
     static let denimPants = 0.043
