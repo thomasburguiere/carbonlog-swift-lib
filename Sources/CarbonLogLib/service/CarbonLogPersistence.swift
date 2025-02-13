@@ -35,7 +35,7 @@ public enum CsvError: Error {
     case invalidCarbonMeasurementInCsv
 }
 
-internal extension CarbonMeasurement {
+extension CarbonMeasurement {
     func toCsvString() -> String {
         let isoDateString = ISO8601DateFormatter().string(from: self.date)
 
@@ -64,7 +64,7 @@ internal extension CarbonMeasurement {
     }
 }
 
-internal extension CarbonLog {
+extension CarbonLog {
     func toCsvString() -> String {
         return self.measurements
             .reduce("") { acc, next in
