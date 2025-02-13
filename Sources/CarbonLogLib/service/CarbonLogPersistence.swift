@@ -14,7 +14,7 @@ public struct CsvPersistenceService: CarbonLogPersistenceService {
     }
 
     public func persist(log: CarbonLog) async throws {
-        try log.toCsvString().write(to: self.csvURL, atomically: true, encoding: String.Encoding.utf8)
+        try log.csvString.write(to: self.csvURL, atomically: true, encoding: String.Encoding.utf8)
     }
 
     public func load(id _: String) async -> CarbonLog? {
@@ -36,11 +36,11 @@ public enum CsvError: Error {
 }
 
 extension CarbonMeasurement {
-    func toCsvString() -> String {
+    var csvString: String {
         let isoDateString = ISO8601DateFormatter().string(from: self.date)
-
         return "\(isoDateString),\(self.carbonKg)"
     }
+
     init(csvString: String) throws {
         let parts = csvString.split(separator: ",")
         if parts.count < 2 {
@@ -65,10 +65,7 @@ extension CarbonMeasurement {
 }
 
 extension CarbonLog {
-    func toCsvString() -> String {
-        return self.measurements
-            .reduce("") { acc, next in
-                acc + next.toCsvString() + "\n"
-            }
+    var csvString: String {
+        measurements.reduce("") { acc, next in acc + next.csvString + "\n" }
     }
 }
