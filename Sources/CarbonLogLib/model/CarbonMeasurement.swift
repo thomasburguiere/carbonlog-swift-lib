@@ -10,10 +10,10 @@ public struct CarbonMeasurement: CustomStringConvertible, Codable {
     public let carbonKg: Double
     public let comment: String?
 
-    public init(kg: Double, at date: Date) {
+    public init(kg: Double, at date: Date, comment: String? = nil) {
         self.carbonKg = kg
         self.date = date
-        self.comment = nil
+        self.comment = comment
     }
 
     public init(kg: Double) {
@@ -21,11 +21,17 @@ public struct CarbonMeasurement: CustomStringConvertible, Codable {
     }
 
     public init(by carbonEq: CarbonEquivalent) {
-        self.init(by: carbonEq, at: Date())
+        self.init(by: carbonEq, at: Date(), comment: carbonEq.description)
     }
 
-    public init(by carbonEq: CarbonEquivalent, at date: Date) {
-        self.init(kg: carbonEq.carbonKg, at: date)
+    public init(by carbonEq: CarbonEquivalent, at date: Date, comment: String? = nil) {
+        let kg = carbonEq.carbonKg
+        guard let comment else {
+            self.init(kg: kg, at: date, comment: carbonEq.description)
+            return
+        }
+        self.init(kg: kg, at: date, comment: comment)
+
     }
 
     public var equivalent: CarbonEquivalent { CarbonEquivalent(carbonKg: self.carbonKg) }

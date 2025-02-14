@@ -59,8 +59,30 @@ struct CsvStuff {
         let result3 = cm3.csvString
 
         // then
-        #expect(result2 == "2022-01-02T12:00:00Z,2.0")
-        #expect(result3 == "2022-01-03T12:00:00Z,3.0")
+        #expect(result2 == "2022-01-02T12:00:00Z,2.00")
+        #expect(result3 == "2022-01-03T12:00:00Z,3.00")
+    }
+
+    @Test("shoud dump measurement to CSV row with custom comment")
+    func shouldGenerateMeasurementCsvWithComment() throws {
+        let eq = CarbonEquivalent(type: .carKm, amount: 300)
+        let cm = CarbonMeasurement(by: eq, at: date2, comment: "test comment")
+        // when
+        let result = cm.csvString
+
+        // then
+        #expect(result == "2022-01-02T12:00:00Z,111.60,test comment")
+    }
+
+    @Test("shoud dump measurement to CSV row with comment based on equivalent description")
+    func shouldGenerateMeasurementCsvWithCommentFromEquivalent() throws {
+        let eq = CarbonEquivalent(type: .carKm, amount: 300)
+        let cm = CarbonMeasurement(by: eq, at: date2)
+        // when
+        let result = cm.csvString
+
+        // then
+        #expect(result == "2022-01-02T12:00:00Z,111.60,300.00 carKm")
     }
 
     @Test("should load CarbonMeasurement from CSV row")
@@ -91,7 +113,7 @@ struct CsvStuff {
 
         // then
         let expected =
-            "2022-01-02T12:00:00Z,2.0" + "\n" + "2022-01-03T12:00:00Z,3.0" + "\n"
+            "2022-01-02T12:00:00Z,2.00" + "\n" + "2022-01-03T12:00:00Z,3.00" + "\n"
         #expect(result == expected)
     }
 

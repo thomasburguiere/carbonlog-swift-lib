@@ -4,7 +4,7 @@ import Testing
 @testable import CarbonLogLib
 
 private struct EqToCarbonTestCase {
-    let type: CarbonEqType
+    let type: CarbonEquivalentType
     let amount: Double
     let expectedCo2Kg: Double
 }
@@ -20,7 +20,7 @@ private let eqToCo2Cases = [
 
 private struct CarbonToEqTestCase {
     let co2Kg: Double
-    let type: CarbonEqType
+    let type: CarbonEquivalentType
     let expectedEqAmount: Double
 }
 
@@ -39,5 +39,11 @@ struct CarbonConverterTests {
     fileprivate func shouldConvertToEq(tc: CarbonToEqTestCase) async throws {
         let eq = CarbonEquivalent(carbonKg: tc.co2Kg)
         #expect(eq.asType(tc.type).round(to: 2) == tc.expectedEqAmount)
+    }
+
+    @Test("should generate measurement description")
+    func generateMeasurementWithComment() async throws {
+        let description = CarbonEquivalent(type: .carKm, amount: 250).description
+        #expect(description == "250.00 carKm")
     }
 }
