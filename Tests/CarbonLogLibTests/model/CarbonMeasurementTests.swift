@@ -5,10 +5,11 @@ import Testing
 
 private let calendar: Calendar = Calendar(identifier: .gregorian)
 
+let gmt = TimeZone(identifier: "GMT")
+private let date1 =
+    calendar
+    .date(from: DateComponents(timeZone: gmt, year: 2022, month: 4, day: 6, hour: 12))!
 struct CarbonMeasurementTests {
-    let date1 =
-        calendar
-        .date(from: DateComponents(year: 2022, month: 4, day: 6, hour: 12))!
     @Test
     func test_init() {
         var ms = CarbonMeasurement(kg: 0.0, at: date1)
@@ -19,7 +20,7 @@ struct CarbonMeasurementTests {
         #expect(ms.carbonKg.round(to: 2) == 292)
 
         #expect(
-            ms.description.starts(with: "292.00 at 2022-04-06"),
+            ms.description.starts(with: "292.00 Kg at 2022-04-06"),
             "expected description to start with \"371.747212 at 2022-04-06\", actual \"\(ms.description)\""
         )
 
@@ -66,5 +67,23 @@ struct CarbonMeasurementTests {
         let ms = CarbonMeasurement(by: eq)
 
         #expect(ms.comment == "1.00 carbonKg")
+    }
+
+    @Suite(".description")
+    struct name {
+        @Test("basic functionality")
+        func decriptionBasic() async throws {
+            let description = CarbonMeasurement(kg: 42.0, at: date1).description
+
+            #expect(description == "42.00 Kg at 2022-04-06T12:00:00Z")
+        }
+
+        @Test
+        func descriptionWithComment() async throws {
+            let description = CarbonMeasurement(by: CarbonEquivalent(type: .beefMeal, amount: 1.0), at: date1)
+                .description
+
+            #expect(description == "7.14 Kg at 2022-04-06T12:00:00Z commment: 1.00 beefMeal")
+        }
     }
 }
