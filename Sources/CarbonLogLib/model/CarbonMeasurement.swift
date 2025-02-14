@@ -16,8 +16,8 @@ public struct CarbonMeasurement: CustomStringConvertible, Codable {
         self.comment = comment
     }
 
-    public init(kg: Double) {
-        self.init(kg: kg, at: Date())
+    public init(kg: Double, comment: String? = nil) {
+        self.init(kg: kg, at: Date(), comment: comment)
     }
 
     public init(by carbonEq: CarbonEquivalent) {

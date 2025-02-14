@@ -9,7 +9,8 @@ struct CarbonMeasurementTests {
     let date1 =
         calendar
         .date(from: DateComponents(year: 2022, month: 4, day: 6, hour: 12))!
-    @Test func test_init() {
+    @Test
+    func test_init() {
         var ms = CarbonMeasurement(kg: 0.0, at: date1)
 
         #expect(ms.carbonKg == 0.0)
@@ -35,5 +36,35 @@ struct CarbonMeasurementTests {
 
         ms = CarbonMeasurement(kg: 292.0)
         #expect(ms.equivalent.asType(.planeKm).round(to: 0) == 2000.00)
+    }
+
+    @Test("should init measurement with no comment")
+    func initNoComment() {
+        let ms = CarbonMeasurement(kg: 1.0)
+
+        #expect(ms.comment == nil)
+    }
+
+    @Test("should init measurement with custom comment")
+    func initCustomComment() {
+        let ms = CarbonMeasurement(kg: 1.0, comment: "my comment")
+
+        #expect(ms.comment == "my comment")
+    }
+
+    @Test("should init measurement with comment based on equivalent")
+    func initEquivalentComment() {
+        let eq = CarbonEquivalent(type: .eggsKg, amount: 0.3)
+        let ms = CarbonMeasurement(by: eq)
+
+        #expect(ms.comment == "0.30 eggsKg")
+    }
+
+    @Test("should init measurement with comment based on equivalent inited in carbonkg")
+    func initEquivalentCommentCarbon() {
+        let eq = CarbonEquivalent(carbonKg: 1.0)
+        let ms = CarbonMeasurement(by: eq)
+
+        #expect(ms.comment == "1.00 carbonKg")
     }
 }
