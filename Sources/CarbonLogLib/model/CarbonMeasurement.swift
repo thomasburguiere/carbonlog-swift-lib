@@ -3,7 +3,13 @@ import Foundation
 public struct CarbonMeasurement: CustomStringConvertible, Codable {
     public var description: String {
         let formatter = ISO8601DateFormatter()
-        return String(format: "%.2f", self.carbonKg.round(to: 2)) + " at " + formatter.string(from: self.date)
+        let amountComponent = "\(String(format: "%.2f", self.carbonKg.round(to: 2))) Kg"
+        let partialDescription = amountComponent + " at " + formatter.string(from: self.date)
+        if let comment {
+            return partialDescription + " commment: " + comment
+        }
+
+        return partialDescription
     }
 
     public let date: Date
