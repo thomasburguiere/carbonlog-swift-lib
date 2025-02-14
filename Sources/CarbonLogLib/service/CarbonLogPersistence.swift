@@ -38,7 +38,19 @@ public enum CsvError: Error {
 extension CarbonMeasurement {
     var csvString: String {
         let isoDateString = ISO8601DateFormatter().string(from: self.date)
-        return "\(isoDateString),\(self.carbonKg)"
+
+        let dateAndAmountCsv = "\(isoDateString),\(String(format: "%.2f", self.carbonKg))"
+
+        let finalCsv: String
+
+        if let comment = self.comment {
+            finalCsv = dateAndAmountCsv + "," + comment
+        }
+        else {
+            finalCsv = dateAndAmountCsv
+        }
+
+        return finalCsv
     }
 
     init(csvString: String) throws {
