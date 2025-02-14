@@ -3,26 +3,26 @@ import Testing
 
 @testable import CarbonLogLib
 
-private let calendar: Calendar = Calendar(identifier: .gregorian)
+private let calendar: Calendar = .init(identifier: .gregorian)
 private let date1 =
     calendar
-    .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 1, hour: 12))!
+        .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 1, hour: 12))!
 private let date2 =
     calendar
-    .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 2, hour: 12))!
+        .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 2, hour: 12))!
 private let date3 =
     calendar
-    .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 3, hour: 12))!
+        .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 3, hour: 12))!
 
 @Suite("CarbonLog CSV Persistence")
 struct CarbonLogPersistenceServiceTests {
-
     private let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
+
+    // test
     private let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
 
     @Test("Should persist and load CarbonLog")
     func persistAndLoadLog() async throws {
-
         let tempFolderURL = FileManager.default.temporaryDirectory
         let outfileURL = tempFolderURL.appending(component: "test.csv")
 
@@ -171,5 +171,4 @@ struct CarbonLogPersistenceServiceTests {
             }
         }
     }
-
 }

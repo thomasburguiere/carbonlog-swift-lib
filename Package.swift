@@ -10,7 +10,7 @@ let package = Package(
         .library(
             name: "CarbonLogLib",
             targets: ["CarbonLogLib"]
-        )
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
