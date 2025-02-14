@@ -23,9 +23,11 @@ public struct CsvPersistenceService: CarbonLogPersistenceService {
 
         let lines = fileContents?.split(separator: "\n")
         guard let lines else { return nil }
-        let measurements = try? lines.map { s in try CarbonMeasurement(csvString: String(s)) }
+        if lines.count == 0 { return nil }
 
-        guard let measurements else { return nil }
+        let measurements = lines.compactMap { try? CarbonMeasurement(csvString: String($0)) }
+        if measurements.count == 0 { return nil }
+
         return CarbonLog(with: measurements)
     }
 }

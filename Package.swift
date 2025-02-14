@@ -26,7 +26,13 @@ let package = Package(
         .testTarget(
             name: "CarbonLogLibTests",
             dependencies: ["CarbonLogLib"],
-            resources: [.copy("Resources"), .copy("Resources/test-input.csv")]
+            resources: [
+                .copy("Resources"),
+                .copy("Resources/test-input.csv"),
+                .copy("Resources/test-empty.csv"),
+                .copy("Resources/test-garbage.csv"),
+                .copy("Resources/test-mixed-input.csv"),
+            ]
         ),
     ]
 )
