@@ -24,16 +24,11 @@ public struct CsvPersistenceService: CarbonLogPersistenceService {
     }
 
     public func load(id _: String) async -> CarbonLog? {
-        let fileContents = try? String(contentsOf: csvURL, encoding: String.Encoding.utf8)
+        guard let fileContents = try? String(contentsOf: csvURL, encoding: String.Encoding.utf8) else {
+            return nil
+        }
 
-        let lines = fileContents?.split(separator: "\n")
-        guard let lines else { return nil }
-        if lines.count == 0 { return nil }
-
-        let measurements = lines.compactMap { try? CarbonMeasurement(csvString: String($0)) }
-        if measurements.count == 0 { return nil }
-
-        return CarbonLog(with: measurements)
+        return CarbonLog.fromCsvString(csv: fileContents)
     }
 }
 
@@ -81,6 +76,15 @@ extension CarbonMeasurement {
 }
 
 extension CarbonLog {
+    static func fromCsvString(csv: String) -> CarbonLog? {
+        let lines = csv.split(separator: "\n")
+        if lines.count == 0 { return nil }
+        let measurements = lines.compactMap { try? CarbonMeasurement(csvString: String($0)) }
+        if measurements.count == 0 { return nil }
+
+        return CarbonLog(with: measurements)
+    }
+
     var csvString: String {
         measurements.reduce("") { acc, next in acc + next.csvString + "\n" }
     }
