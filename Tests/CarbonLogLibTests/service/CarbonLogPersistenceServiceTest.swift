@@ -24,23 +24,51 @@ struct CarbonLogPersistenceServiceTests {
     @Test("Should persist and load CarbonLog")
     func persistAndLoadLog() async throws {
         let tempFolderURL = FileManager.default.temporaryDirectory
-        let outfileURL = tempFolderURL.appending(component: "test.csv")
+        let tempOutFileURL = tempFolderURL.appending(component: "test.csv")
 
         let log = CarbonLog(with: [cm2, cm3])
-        let csvService = CsvPersistenceService(csvURL: outfileURL)
+        let csvService = CsvPersistenceService(csvURL: tempOutFileURL)
 
         // when
         try await csvService.persist(log: log)
-        let loadedLog = try #require(await CsvPersistenceService(csvURL: outfileURL).load(id: "noop"))
+        let loadedLog = try #require(await CsvPersistenceService(csvURL: tempOutFileURL).load(id: "noop"))
 
         // then
         #expect(loadedLog.measurements.count == 2)
     }
 
+    func getInputFilePathURL(fileName: String) -> URL {
+        Bundle.module.url(forResource: fileName, withExtension: "csv")!
+    }
+
+    @Test("Should persist updates to CarbonLog")
+    func persistUpdateToLogLog() async throws {
+        // given
+        let service = CsvPersistenceService(csvURL: getInputFilePathURL(fileName: "test-input"))
+        let initialLog = try #require(await service.load(id: "noop"))
+        #expect(initialLog.measurements.count == 2)
+
+        let additionalMeasurement = CarbonMeasurement(
+            by: CarbonEquivalent(type: .carKm, amount: 250),
+            at: date3,
+            comment: "appended measurement"
+        )
+
+        // when
+        try await service.append(measurement: additionalMeasurement, toLogWithId: "noop")
+
+        // then
+        let updatedLog = try #require(await service.load(id: "noop"))
+        #expect(updatedLog.measurements.count == 3)
+        let persistedAdditionalMeasurement = updatedLog.measurements.first { $0.comment == "appended measurement" }
+        #expect(persistedAdditionalMeasurement != nil)
+        #expect(persistedAdditionalMeasurement?.date.description == "2022-01-03 12:00:00 +0000")
+        #expect(persistedAdditionalMeasurement?.carbonKg == 93)
+    }
+
     @Test("Should load CarbonLog from CSV")
     func loadCsvLog() async throws {
-        let inputFilePathURL = Bundle.module.url(forResource: "test-input", withExtension: "csv")
-        let csvService = CsvPersistenceService(csvURL: inputFilePathURL!)
+        let csvService = CsvPersistenceService(csvURL: getInputFilePathURL(fileName: "test-input"))
         let loadedLog = try #require(await csvService.load(id: "noop"))
 
         // then
@@ -49,8 +77,7 @@ struct CarbonLogPersistenceServiceTests {
 
     @Test("Should return nil when loading empty CSV")
     func handleEmptyCsv() async throws {
-        let inputFilePathURL = Bundle.module.url(forResource: "test-empty", withExtension: "csv")
-        let csvService = CsvPersistenceService(csvURL: inputFilePathURL!)
+        let csvService = CsvPersistenceService(csvURL: getInputFilePathURL(fileName: "test-empty"))
         let loadedLog = await csvService.load(id: "noop")
 
         #expect(loadedLog == nil)
@@ -74,7 +101,7 @@ struct CarbonLogPersistenceServiceTests {
         #expect(loadedLog?.measurements.count == 2)
     }
 
-    @Suite("CSV parsing & dumping")
+    @Suite("CSV string parsing & dumping")
     struct CsvStuff {
         private let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         private let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
