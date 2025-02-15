@@ -3,23 +3,28 @@ import Foundation
 public protocol CarbonLogPersistenceService {
     func persist(log: CarbonLog) async throws
     func load(id: String) async -> CarbonLog?
+    func append(measurement: CarbonMeasurement, toLogWithId: String) async throws
 }
 
 public struct CsvPersistenceService: CarbonLogPersistenceService {
-
     let csvURL: URL
 
     public init(csvURL: URL) {
         self.csvURL = csvURL
     }
 
+    public func append(measurement: CarbonMeasurement, toLogWithId _: String) async throws {
+        guard let log = await load(id: "noop") else { return }
+        let updatedLog = log.add(measurements: [measurement])
+        try await persist(log: updatedLog)
+    }
+
     public func persist(log: CarbonLog) async throws {
-        try log.csvString.write(to: self.csvURL, atomically: true, encoding: String.Encoding.utf8)
+        try log.csvString.write(to: csvURL, atomically: true, encoding: String.Encoding.utf8)
     }
 
     public func load(id _: String) async -> CarbonLog? {
-
-        let fileContents = try? String(contentsOf: self.csvURL, encoding: String.Encoding.utf8)
+        let fileContents = try? String(contentsOf: csvURL, encoding: String.Encoding.utf8)
 
         let lines = fileContents?.split(separator: "\n")
         guard let lines else { return nil }
@@ -39,18 +44,16 @@ public enum CsvError: Error {
 
 extension CarbonMeasurement {
     var csvString: String {
-        let isoDateString = ISO8601DateFormatter().string(from: self.date)
+        let isoDateString = ISO8601DateFormatter().string(from: date)
 
-        let dateAndAmountCsv = "\(isoDateString),\(String(format: "%.2f", self.carbonKg))"
+        let dateAndAmountCsv = "\(isoDateString),\(String(format: "%.2f", carbonKg))"
 
-        let finalCsv: String
-
-        if let comment = self.comment {
-            finalCsv = dateAndAmountCsv + "," + comment
-        }
-        else {
-            finalCsv = dateAndAmountCsv
-        }
+        let finalCsv: String =
+            if let comment {
+                dateAndAmountCsv + "," + comment
+            } else {
+                dateAndAmountCsv
+            }
 
         return finalCsv
     }
@@ -70,10 +73,9 @@ extension CarbonMeasurement {
         self.date = date
         self.carbonKg = carbonKg
         if parts.count > 2 {
-            self.comment = String(parts[2])
-        }
-        else {
-            self.comment = nil
+            comment = String(parts[2])
+        } else {
+            comment = nil
         }
     }
 }
