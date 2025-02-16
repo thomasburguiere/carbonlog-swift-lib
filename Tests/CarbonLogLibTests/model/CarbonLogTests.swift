@@ -3,26 +3,25 @@ import Testing
 
 @testable import CarbonLogLib
 
-private let calendar: Calendar = Calendar(identifier: .gregorian)
+private let calendar: Calendar = .init(identifier: .gregorian)
 
 private let date1 =
     calendar
-    .date(from: DateComponents(year: 2022, month: 1, day: 1))!
+        .date(from: DateComponents(year: 2022, month: 1, day: 1))!
 private let date2 =
     calendar
-    .date(from: DateComponents(year: 2022, month: 1, day: 2))!
+        .date(from: DateComponents(year: 2022, month: 1, day: 2))!
 private let date3 =
     calendar
-    .date(from: DateComponents(year: 2022, month: 1, day: 3))!
+        .date(from: DateComponents(year: 2022, month: 1, day: 3))!
 private let date4 =
     calendar
-    .date(from: DateComponents(year: 2022, month: 1, day: 4))!
+        .date(from: DateComponents(year: 2022, month: 1, day: 4))!
 private let date_2021 =
     calendar
-    .date(from: DateComponents(year: 2021, month: 1, day: 4))!
+        .date(from: DateComponents(year: 2021, month: 1, day: 4))!
 
 struct CarbonLogTests {
-
     @Test
     func should_init_with_default_id_and_empty_measurements() async throws {
         // when

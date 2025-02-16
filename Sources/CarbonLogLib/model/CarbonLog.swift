@@ -1,9 +1,8 @@
 import Foundation
 
-private let cal: Calendar = Calendar(identifier: .gregorian)
+private let cal: Calendar = .init(identifier: .gregorian)
 
 public struct CarbonLog: Codable {
-
     public let measurements: [CarbonMeasurement]
     public let id: String
 
@@ -13,18 +12,16 @@ public struct CarbonLog: Codable {
 
     public init(with measurements: [CarbonMeasurement]) {
         self.measurements = measurements
-        self.id = UUID().uuidString
+        id = UUID().uuidString
     }
 
     public func getRangeCarbonKgs(from: Date, to: Date = Date(), inclusive: Bool = false) -> Double {
-
         let filter: (CarbonMeasurement) -> Bool
         if !inclusive {
             filter = { (cm: CarbonMeasurement) -> Bool in
                 cm.date.compare(from).rawValue > 0 && cm.date.compare(to).rawValue < 0
             }
-        }
-        else {
+        } else {
             filter = { (cm: CarbonMeasurement) -> Bool in
                 cm.date.compare(from).rawValue >= 0 && cm.date.compare(to).rawValue <= 0
             }
@@ -32,9 +29,9 @@ public struct CarbonLog: Codable {
 
         return
             measurements
-            .filter(filter)
-            .map { $0.carbonKg }
-            .reduce(0.0) { $0 + $1 }
+                .filter(filter)
+                .map { $0.carbonKg }
+                .reduce(0.0) { $0 + $1 }
     }
 
     public func getCurrentYearCarbonKgs() -> Double {
@@ -42,9 +39,9 @@ public struct CarbonLog: Codable {
 
         return
             measurements
-            .filter { cal.component(.year, from: $0.date) == currentYear }
-            .map { $0.carbonKg }
-            .reduce(0.0) { $0 + $1 }
+                .filter { cal.component(.year, from: $0.date) == currentYear }
+                .map { $0.carbonKg }
+                .reduce(0.0) { $0 + $1 }
     }
 
     public func add(measurements: [CarbonMeasurement]) -> CarbonLog {
