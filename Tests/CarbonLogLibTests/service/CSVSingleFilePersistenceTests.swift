@@ -6,13 +6,13 @@ import Testing
 private let calendar: Calendar = .init(identifier: .gregorian)
 private let date1 =
     calendar
-        .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 1, hour: 12))!
+        .date(from: DateComponents(timeZone: gmt, year: 2022, month: 1, day: 1, hour: 12))!
 private let date2 =
     calendar
-        .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 2, hour: 12))!
+        .date(from: DateComponents(timeZone: gmt, year: 2022, month: 1, day: 2, hour: 12))!
 private let date3 =
     calendar
-        .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 3, hour: 12))!
+        .date(from: DateComponents(timeZone: gmt, year: 2022, month: 1, day: 3, hour: 12))!
 
 @Suite("CarbonLog Single CSV File Persistence")
 struct SingleCSVPersistenceTests {
