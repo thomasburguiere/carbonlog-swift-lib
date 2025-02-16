@@ -1,13 +1,5 @@
 import Foundation
 
-private extension FileFormat {
-    var mapper: CarbonLogStringMapper {
-        switch self {
-        case .CSV: return CsvMapper()
-        }
-    }
-}
-
 public struct LocalFilePersistenceService: CarbonLogPersistenceService {
     let fileURL: URL
     let mapper: CarbonLogStringMapper

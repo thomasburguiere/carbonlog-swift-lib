@@ -2,6 +2,12 @@ import Foundation
 
 public enum FileFormat {
     case CSV
+
+    var mapper: CarbonLogStringMapper {
+        switch self {
+        case .CSV: return CsvMapper()
+        }
+    }
 }
 
 public protocol CarbonLogStringMapper {
