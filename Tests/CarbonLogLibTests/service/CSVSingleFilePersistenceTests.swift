@@ -14,8 +14,8 @@ private let date3 =
     calendar
         .date(from: DateComponents(timeZone: TimeZone(identifier: "GMT"), year: 2022, month: 1, day: 3, hour: 12))!
 
-@Suite("CarbonLog CSV Persistence")
-struct CarbonLogPersistenceServiceTests {
+@Suite("CarbonLog Single CSV File Persistence")
+struct SingleCSVPersistenceTests {
     private let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
 
     // test
