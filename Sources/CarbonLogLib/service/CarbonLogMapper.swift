@@ -4,12 +4,6 @@ public enum FileFormat {
     case CSV
 }
 
-func stringMapperFactory(format: FileFormat) -> CarbonLogStringMapper {
-    switch format {
-    case .CSV: return CsvMapper()
-    }
-}
-
 public protocol CarbonLogStringMapper {
     func logToString(log: CarbonLog) -> String
     func stringToLog(string: String) -> CarbonLog?
