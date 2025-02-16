@@ -25,7 +25,7 @@ private struct CarbonToEqTestCase {
 }
 
 private let co2ToEqCases = [
-    CarbonToEqTestCase(co2Kg: 1.0, type: .beefMeal, expectedEqAmount: 0.14)
+    CarbonToEqTestCase(co2Kg: 1.0, type: .beefMeal, expectedEqAmount: 0.14),
 ]
 
 struct CarbonConverterTests {

@@ -3,12 +3,12 @@ import Testing
 
 @testable import CarbonLogLib
 
-private let calendar: Calendar = Calendar(identifier: .gregorian)
+private let calendar: Calendar = .init(identifier: .gregorian)
 
 let gmt = TimeZone(identifier: "GMT")
 private let date1 =
     calendar
-    .date(from: DateComponents(timeZone: gmt, year: 2022, month: 4, day: 6, hour: 12))!
+        .date(from: DateComponents(timeZone: gmt, year: 2022, month: 4, day: 6, hour: 12))!
 struct CarbonMeasurementTests {
     @Test
     func test_init() {

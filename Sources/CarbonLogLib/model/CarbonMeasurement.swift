@@ -3,8 +3,8 @@ import Foundation
 public struct CarbonMeasurement: CustomStringConvertible, Codable {
     public var description: String {
         let formatter = ISO8601DateFormatter()
-        let amountComponent = "\(String(format: "%.2f", self.carbonKg.round(to: 2))) Kg"
-        let partialDescription = amountComponent + " at " + formatter.string(from: self.date)
+        let amountComponent = "\(String(format: "%.2f", carbonKg.round(to: 2))) Kg"
+        let partialDescription = amountComponent + " at " + formatter.string(from: date)
         if let comment {
             return partialDescription + " commment: " + comment
         }
@@ -17,7 +17,7 @@ public struct CarbonMeasurement: CustomStringConvertible, Codable {
     public let comment: String?
 
     public init(kg: Double, at date: Date, comment: String? = nil) {
-        self.carbonKg = kg
+        carbonKg = kg
         self.date = date
         self.comment = comment
     }
@@ -37,10 +37,9 @@ public struct CarbonMeasurement: CustomStringConvertible, Codable {
             return
         }
         self.init(kg: kg, at: date, comment: comment)
-
     }
 
-    public var equivalent: CarbonEquivalent { CarbonEquivalent(carbonKg: self.carbonKg) }
+    public var equivalent: CarbonEquivalent { CarbonEquivalent(carbonKg: carbonKg) }
 }
 
 extension Double {
