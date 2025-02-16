@@ -1,13 +1,13 @@
 {
   "recommendations": [
-    "swiftlang.swift-vscode",
-    "vknabel.vscode-apple-swift-format",
-    "ms-azuretools.vscode-docker",
-    "vadimcn.vscode-lldb",
+    "anweber.vscode-httpyac",
     "github.vscode-github-actions",
     "github.vscode-pull-request-github",
-    "anweber.vscode-httpyac",
-    "soulcode.vscode-unwanted-extensions"
+    "ms-azuretools.vscode-docker",
+    "soulcode.vscode-unwanted-extensions",
+    "swiftlang.swift-vscode",
+    "vadimcn.vscode-lldb",
+    "vknabel.vscode-swiftformat"
   ],
   "unwantedRecommendations": [
     "alexkrechik.cucumberautocomplete",
@@ -29,9 +29,11 @@
     "rust-lang.rust-analyzer",
     "tauri-apps.tauri-vscode",
     "vitest.explorer",
+    "vknabel.vscode-apple-swift-format",
     "vscjava.vscode-gradle",
     "vscjava.vscode-java-debug",
     "vue.volar",
-    "yoavbls.pretty-ts-errors"
+    "yoavbls.pretty-ts-errors",
+    "esbenp.prettier-vscode"
   ]
 }
