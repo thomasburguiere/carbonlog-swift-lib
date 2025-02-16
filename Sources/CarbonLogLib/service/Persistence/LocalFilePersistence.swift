@@ -17,7 +17,7 @@ public struct LocalFilePersistenceService: CarbonLogPersistenceService {
 
     public func persist(log: CarbonLog) async throws {
         let string = mapper.logToString(log: log)
-        try string.write(to: fileURL, atomically: true, encoding: .utf8)
+        try string?.write(to: fileURL, atomically: true, encoding: .utf8)
     }
 
     public func load(id _: String) async -> CarbonLog? {

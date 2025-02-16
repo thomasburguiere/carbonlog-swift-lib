@@ -1,27 +1,12 @@
 import Foundation
 
-public enum FileFormat {
-    case CSV
-
-    var mapper: CarbonLogStringMapper {
-        switch self {
-        case .CSV: return CsvMapper()
-        }
-    }
-}
-
-public protocol CarbonLogStringMapper {
-    func logToString(log: CarbonLog) -> String
-    func stringToLog(string: String) -> CarbonLog?
-}
-
 enum CsvError: Error {
     case unparseableCsvString
     case invalidCarbonMeasurementInCsv
 }
 
 struct CsvMapper: CarbonLogStringMapper {
-    func logToString(log: CarbonLog) -> String {
+    func logToString(log: CarbonLog) -> String? {
         log.csvString
     }
 
