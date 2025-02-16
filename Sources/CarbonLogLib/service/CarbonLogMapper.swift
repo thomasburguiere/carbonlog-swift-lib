@@ -30,12 +30,11 @@ extension CarbonMeasurement {
 
         let dateAndAmountCsv = "\(isoDateString),\(String(format: "%.2f", carbonKg))"
 
-        let finalCsv: String =
-            if let comment {
-                dateAndAmountCsv + "," + comment
-            } else {
-                dateAndAmountCsv
-            }
+        let finalCsv: String = if let comment {
+            dateAndAmountCsv + "," + comment
+        } else {
+            dateAndAmountCsv
+        }
 
         return finalCsv
     }

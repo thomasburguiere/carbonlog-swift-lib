@@ -18,18 +18,18 @@ public struct LocalFilePersistenceService: CarbonLogPersistenceService {
     }
 
     public func append(measurement: CarbonMeasurement, toLogWithId _: String) async throws {
-        guard let log = await load(id: "noop") else { return }
-        let updatedLog = log.add(measurements: [measurement])
+        guard let log: CarbonLog = await load(id: "noop") else { return }
+        let updatedLog: CarbonLog = log.add(measurements: [measurement])
         try await persist(log: updatedLog)
     }
 
     public func persist(log: CarbonLog) async throws {
         let string = mapper.logToString(log: log)
-        try string.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
+        try string.write(to: fileURL, atomically: true, encoding: .utf8)
     }
 
     public func load(id _: String) async -> CarbonLog? {
-        guard let fileContents = try? String(contentsOf: fileURL, encoding: String.Encoding.utf8) else {
+        guard let fileContents = try? String(contentsOf: fileURL, encoding: .utf8) else {
             return nil
         }
 
