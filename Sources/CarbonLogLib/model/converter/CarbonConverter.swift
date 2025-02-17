@@ -29,18 +29,18 @@ public enum CarbonEquivalentType: String, CaseIterable, Sendable, Codable {
     static func from(string: String) -> CarbonEquivalentType? {
         allCases.first { $0.rawValue == string }
     }
-}
 
-public func carbonEquivalentTypeInCarbonKg(type: CarbonEquivalentType) -> Double {
-    switch type {
-    case .carbonKg: return 1
-    case .chickenKg: return 18.2
-    case .eggsKg: return 5.3
-    case .beefMeal: return 7.1428571429
-    case .planeKm: return 0.146
-    case .carKm: return 0.372
-    case .nuclearKWh: return 0.14
-    case .hydroKWh: return 0.04
+    var carbonKgEquivalent: Double {
+        switch self {
+        case .carbonKg: return 1
+        case .chickenKg: return 18.2
+        case .eggsKg: return 5.3
+        case .beefMeal: return 7.1428571429
+        case .planeKm: return 0.146
+        case .carKm: return 0.372
+        case .nuclearKWh: return 0.14
+        case .hydroKWh: return 0.04
+        }
     }
 }
 
@@ -61,12 +61,12 @@ public struct CarbonEquivalent: Codable, Equatable, CustomStringConvertible {
     }
 
     public var carbonKg: Double {
-        let ratio = carbonEquivalentTypeInCarbonKg(type: type)
+        let ratio = type.carbonKgEquivalent
         return ratio * amount
     }
 
     public func asType(_ type: CarbonEquivalentType) -> Double {
-        let invertedRatio = 1 / carbonEquivalentTypeInCarbonKg(type: type)
+        let invertedRatio = 1 / type.carbonKgEquivalent
         return invertedRatio * amount
     }
 
