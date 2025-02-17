@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CarbonMeasurement: CustomStringConvertible, Codable {
+public struct CarbonMeasurement: CustomStringConvertible, Codable, Sendable {
     public var description: String {
         let formatter = ISO8601DateFormatter()
         let amountComponent = "\(String(format: "%.2f", carbonKg.round(to: 2))) Kg"
