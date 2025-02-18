@@ -6,7 +6,7 @@ public struct CarbonMeasurement: CustomStringConvertible, Codable, Sendable {
         let amountComponent = "\(String(format: "%.2f", carbonKg.round(to: 2))) Kg"
         let partialDescription = amountComponent + " at " + formatter.string(from: date)
         if let comment {
-            return partialDescription + " commment: " + comment
+            return partialDescription + " comment: " + comment
         }
 
         return partialDescription
