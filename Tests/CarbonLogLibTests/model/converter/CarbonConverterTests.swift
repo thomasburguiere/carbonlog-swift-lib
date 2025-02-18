@@ -28,6 +28,7 @@ private let co2ToEqCases = [
     CarbonToEqTestCase(co2Kg: 1.0, type: .beefMeal, expectedEqAmount: 0.14),
 ]
 
+@Suite("Carbon Conversion tets")
 struct CarbonConverterTests {
     @Test("should convert equivalent amounts to carbon Kgs", arguments: eqToCo2Cases)
     fileprivate func shouldConvertToKg(tc: EqToCarbonTestCase) async throws {
@@ -41,9 +42,12 @@ struct CarbonConverterTests {
         #expect(eq.asType(tc.type).round(to: 2) == tc.expectedEqAmount)
     }
 
-    @Test("should generate measurement description")
-    func generateMeasurementWithComment() async throws {
-        let description = CarbonEquivalent(type: .carKm, amount: 250).description
+    @Test("should generate CarboneEquivalent description")
+    func generateEquivalentComment() async throws {
+        var description = CarbonEquivalent(type: .carKm, amount: 250).description
         #expect(description == "250.00 carKm")
+
+        description = CarbonEquivalent(carbonKg: 33.0).description
+        #expect(description == "33.00 carbonKg")
     }
 }
