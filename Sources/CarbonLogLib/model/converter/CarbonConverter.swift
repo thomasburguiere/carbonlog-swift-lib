@@ -50,7 +50,7 @@ public struct CarbonEquivalent: Codable, Equatable, CustomStringConvertible {
     let type: CarbonEquivalentType
     let amount: Double
 
-    public init(type: CarbonEquivalentType, amount: Double, comment _: String? = nil) {
+    public init(type: CarbonEquivalentType, amount: Double) {
         self.type = type
         self.amount = amount
     }
