@@ -83,7 +83,7 @@ struct CarbonMeasurementTests {
             let description = CarbonMeasurement(by: CarbonEquivalent(type: .beefMeal, amount: 1.0), at: date1)
                 .description
 
-            #expect(description == "7.14 Kg at 2022-04-06T12:00:00Z commment: 1.00 beefMeal")
+            #expect(description == "7.14 Kg at 2022-04-06T12:00:00Z comment: 1.00 beefMeal")
         }
     }
 }
