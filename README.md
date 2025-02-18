@@ -1,6 +1,6 @@
-# carbonlog.lib
+# CarbonLogLib
 
-A description of this package.
+A Swift Library that contains basic model & service entities to keep track of a person's Carbon emissions in CO2 Kg equivalent
 
 ## Generating & reading documention (WIP)
 
