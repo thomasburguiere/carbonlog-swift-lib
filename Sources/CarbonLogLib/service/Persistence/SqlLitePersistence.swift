@@ -20,7 +20,7 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         let db = openDatabase(filepath: dbFilePath.absoluteString)
         var insertStatement: OpaquePointer?
         let insertStatementString = """
-          INSERT INTO CarbonMeasurement (id, carbonKg, date) VALUES (?, ?, ?);
+          INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
         guard sqlite3_prepare_v2(db, insertStatementString, -1, &insertStatement, nil) == SQLITE_OK else {
             throw SQLError.CouldNotPrepareStatement
@@ -32,6 +32,10 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         sqlite3_bind_text(insertStatement, 1, id.utf8String, -1, nil)
         sqlite3_bind_double(insertStatement, 2, carbonKg)
         sqlite3_bind_text(insertStatement, 3, date.utf8String, -1, nil)
+        if let comment = measurement.comment {
+            let comment: NSString = comment as NSString
+            sqlite3_bind_text(insertStatement, 4, comment.utf8String, -1, nil)
+        }
         // 4
         if sqlite3_step(insertStatement) == SQLITE_DONE {
             print("\nSuccessfully inserted row.")
