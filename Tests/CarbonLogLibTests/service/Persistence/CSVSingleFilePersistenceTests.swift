@@ -27,11 +27,11 @@ struct SingleCSVPersistenceTests {
         let tempOutFileURL = tempFolderURL.appending(component: "test.csv")
 
         let log = CarbonLog(with: [cm2, cm3])
-        var service = LocalFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
+        var service = LocalStringFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
 
         // when
         try await service.persist(log: log)
-        service = LocalFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
+        service = LocalStringFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
         let loadedLog = try #require(await service.load(id: "noop"))
 
         // then
@@ -45,7 +45,7 @@ struct SingleCSVPersistenceTests {
     @Test("Should persist updates to CarbonLog")
     func persistUpdateToLogLog() async throws {
         // given
-        let service = LocalFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-input"), format: .CSV)
+        let service = LocalStringFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-input"), format: .CSV)
         let initialLog = try #require(await service.load(id: "noop"))
         #expect(initialLog.measurements.count == 2)
 
@@ -69,7 +69,7 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should load CarbonLog from CSV")
     func loadCsvLog() async throws {
-        let service = LocalFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-input"), format: .CSV)
+        let service = LocalStringFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-input"), format: .CSV)
         let loadedLog = try #require(await service.load(id: "noop"))
 
         // then
@@ -78,7 +78,7 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should return nil when loading empty CSV")
     func handleEmptyCsv() async throws {
-        let service = LocalFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-empty"), format: .CSV)
+        let service = LocalStringFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-empty"), format: .CSV)
         let loadedLog = await service.load(id: "noop")
 
         #expect(loadedLog == nil)
@@ -86,7 +86,7 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should return nil when loading garbage CSV")
     func handleGarbageCsv() async throws {
-        let service = LocalFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-garbage"), format: .CSV)
+        let service = LocalStringFilePersistenceService(fileURL: getInputFilePathURL(fileName: "test-garbage"), format: .CSV)
         let loadedLog = await service.load(id: "noop")
 
         #expect(loadedLog == nil)
@@ -94,7 +94,7 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should return handle CSV with mixed valid invalid content")
     func handleMixedGarbageCsv() async throws {
-        let service = LocalFilePersistenceService(
+        let service = LocalStringFilePersistenceService(
             fileURL: getInputFilePathURL(fileName: "test-mixed-input"),
             format: .CSV
         )
