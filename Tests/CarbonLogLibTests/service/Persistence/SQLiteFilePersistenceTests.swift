@@ -18,7 +18,7 @@ struct name {
         let tempFolderURL = FileManager.default.temporaryDirectory
         let tempOutFileURL = tempFolderURL.appending(component: "test.sqlite")
 
-        try FileManager.default.removeItem(at: tempOutFileURL)
+        do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
 
         print(tempOutFileURL.absoluteString)
         let db = try? #require(openDatabase(filepath: tempOutFileURL.absoluteString))
