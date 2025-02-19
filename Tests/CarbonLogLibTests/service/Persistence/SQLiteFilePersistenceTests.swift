@@ -13,7 +13,7 @@ private let date2 =
 
 @Suite("SQLite Persistence")
 struct name {
-    private let cm2 = CarbonMeasurement(kg: 42.0, at: date2)
+    private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
     @Test func testName() async throws {
         let tempFolderURL = FileManager.default.temporaryDirectory
         let tempOutFileURL = tempFolderURL.appending(component: "test.sqlite")
@@ -38,6 +38,11 @@ struct name {
         let service = SQLitePersistenceService(dbPath: tempOutFileURL)
 
         // when
-        try await service.persist(measurement: cm2)
+        try await service.persist(measurement: cm2, id: "kurwa")
+        let persisted = try #require(try service.load(measurementId: "kurwa"))
+
+        #expect(persisted.carbonKg == 42)
+        #expect(persisted.date.description == "2022-01-02 12:00:00 +0000")
+        #expect(persisted.comment == "kurwa comment")
     }
 }
