@@ -2,7 +2,41 @@ import Foundation
 import SQLite3
 
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
+    let formatter = ISO8601DateFormatter()
+    let dbFilePath: URL
+
+    init(dbPath: URL) {
+        dbFilePath = dbPath
+    }
+
     public func persist(log _: CarbonLog) async throws {}
+
+    public func persist(measurement: CarbonMeasurement) async throws {
+        let db = openDatabase(filepath: dbFilePath.absoluteString)
+        var insertStatement: OpaquePointer?
+        let insertStatementString = """
+          INSERT INTO CarbonMeasurement (id, carbonKg, date) VALUES (?, ?, ?);
+        """
+        if sqlite3_prepare_v2(db, insertStatementString, -1, &insertStatement, nil) ==
+            SQLITE_OK
+        {
+            let id: NSString = UUID().uuidString as NSString
+            let carbonKg = measurement.carbonKg
+            let date: NSString = formatter.string(from: measurement.date) as NSString
+            // 2
+            sqlite3_bind_text(insertStatement, 1, id.utf8String, -1, nil)
+            sqlite3_bind_double(insertStatement, 2, carbonKg)
+            sqlite3_bind_text(insertStatement, 3, date.utf8String, -1, nil)
+            // 4
+            if sqlite3_step(insertStatement) == SQLITE_DONE {
+                print("\nSuccessfully inserted row.")
+            } else {
+                print("\nCould not insert row.")
+            }
+        } else {
+            print("\nINSERT statement is not prepared.")
+        }
+    }
 
     public func load(id _: String) async -> CarbonLog? {
         return nil
