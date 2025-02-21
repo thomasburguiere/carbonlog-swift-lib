@@ -23,13 +23,15 @@ private extension CarbonMeasurement {
     }
 }
 
+private extension String {
+    var sqliteString: UnsafePointer<CChar>? { (self as NSString).utf8String }
+}
+
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
     let formatter = ISO8601DateFormatter()
-    let dbFilePath: URL
     let db: SQLiteDB
 
     init(dbPath: URL) throws {
-        dbFilePath = dbPath
         db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
     }
 
@@ -41,16 +43,15 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         """
         let insertStatement: OpaquePointer? = try db.prepareStament(statement: insertStatementString)
 
-        let id: NSString = (id ?? UUID().uuidString) as NSString
+        let id = id ?? UUID().uuidString
         let carbonKg = measurement.carbonKg
-        let date: NSString = formatter.string(from: measurement.date) as NSString
+        let dateString = formatter.string(from: measurement.date)
         // 2
-        sqlite3_bind_text(insertStatement, 1, id.utf8String, -1, nil)
+        sqlite3_bind_text(insertStatement, 1, id.sqliteString, -1, nil)
         sqlite3_bind_double(insertStatement, 2, carbonKg)
-        sqlite3_bind_text(insertStatement, 3, date.utf8String, -1, nil)
+        sqlite3_bind_text(insertStatement, 3, dateString.sqliteString, -1, nil)
         if let comment = measurement.comment {
-            let comment: NSString = comment as NSString
-            sqlite3_bind_text(insertStatement, 4, comment.utf8String, -1, nil)
+            sqlite3_bind_text(insertStatement, 4, comment.sqliteString, -1, nil)
         }
         // 4
         if sqlite3_step(insertStatement) == SQLITE_DONE {
@@ -70,9 +71,7 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         """
         let selectStatement: OpaquePointer? = try db.prepareStament(statement: selectStatementString)
 
-        let nsId: NSString = id as NSString
-
-        sqlite3_bind_text(selectStatement, 1, nsId.utf8String, -1, nil)
+        sqlite3_bind_text(selectStatement, 1, id.sqliteString, -1, nil)
         guard sqlite3_step(selectStatement) == SQLITE_ROW else { return nil }
 
         let date: Date? = sqlite3_column_text(selectStatement, 0)
@@ -108,7 +107,7 @@ struct SQLiteDB {
         let statementString = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
 
         let tableExistsPointer: OpaquePointer? = try! prepareStament(statement: statementString)
-        sqlite3_bind_text(tableExistsPointer, 1, (tableName as NSString).utf8String, -1, nil)
+        sqlite3_bind_text(tableExistsPointer, 1, tableName.sqliteString, -1, nil)
         sqlite3_step(tableExistsPointer)
 
         let count = sqlite3_column_int(tableExistsPointer, 0)
