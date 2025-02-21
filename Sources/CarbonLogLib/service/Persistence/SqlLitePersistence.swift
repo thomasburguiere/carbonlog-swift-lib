@@ -22,15 +22,11 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     public func persist(log _: CarbonLog) async throws {}
 
     public func persist(measurement: CarbonMeasurement, id: String? = nil) async throws {
-        var insertStatement: OpaquePointer?
         let insertStatementString = """
           INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
+        let insertStatement: OpaquePointer? = try db.prepareStament(statement: insertStatementString)
 
-        let prepareStatementResult = sqlite3_prepare_v2(db.dbPointer, insertStatementString, -1, &insertStatement, nil)
-        guard prepareStatementResult == SQLITE_OK else {
-            throw SQLError.CouldNotPrepareStatement
-        }
         let id: NSString = (id ?? UUID().uuidString) as NSString
         let carbonKg = measurement.carbonKg
         let date: NSString = formatter.string(from: measurement.date) as NSString
@@ -55,14 +51,10 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     }
 
     public func load(measurementId id: String) throws -> CarbonMeasurement? {
-        let db = try SQLiteDB.fromPath(filepath: dbFilePath.absoluteString)
-        var selectStatement: OpaquePointer?
         let selectStatementString = """
           select date, carbonKg, comment from CarbonMeasurement where id = ?;
         """
-        guard sqlite3_prepare_v2(db.dbPointer, selectStatementString, -1, &selectStatement, nil) == SQLITE_OK else {
-            throw SQLError.CouldNotPrepareStatement
-        }
+        let selectStatement: OpaquePointer? = try db.prepareStament(statement: selectStatementString)
 
         let nsId: NSString = id as NSString
 
@@ -109,27 +101,35 @@ struct SQLiteDB {
 
     func tableExists(tableName: String) -> Bool {
         let statementString = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
-        var stmtPointer: OpaquePointer?
 
-        sqlite3_prepare(dbPointer, statementString, -1, &stmtPointer, nil)
-        sqlite3_bind_text(stmtPointer, 1, (tableName as NSString).utf8String, -1, nil)
-        sqlite3_step(stmtPointer)
+        let tableExistsPointer: OpaquePointer? = try! prepareStament(statement: statementString)
+        sqlite3_bind_text(tableExistsPointer, 1, (tableName as NSString).utf8String, -1, nil)
+        sqlite3_step(tableExistsPointer)
 
-        let count = sqlite3_column_int(stmtPointer, 0)
+        let count = sqlite3_column_int(tableExistsPointer, 0)
 
         return count > 0
     }
 
-    func executeStatement(statement: String) throws {
+    func prepareStament(statement: String) throws -> OpaquePointer? {
         var statementPointer: OpaquePointer?
 
         let prepareReturnCode = sqlite3_prepare_v2(dbPointer, statement, -1, &statementPointer, nil)
-        guard prepareReturnCode == SQLITE_OK else { throw SQLError.SQLiteErrorWithCode("Could not prepare statement: \(statement)", prepareReturnCode) }
+        guard prepareReturnCode == SQLITE_OK else {
+            throw SQLError.SQLiteErrorWithCode("Could not prepare statement: \(statement)", prepareReturnCode)
+        }
+
+        return statementPointer
+    }
+
+    func executeStatement(statement: String) throws {
+        let statementPointer = try prepareStament(statement: statement)
+        defer {
+            sqlite3_finalize(statementPointer)
+        }
 
         let executeReturnCode = sqlite3_step(statementPointer)
         guard executeReturnCode == SQLITE_DONE else { throw SQLError.SQLiteErrorWithCode("Could not execute statement: \(statement)", executeReturnCode) }
-
-        sqlite3_finalize(statementPointer)
     }
 
     static func fromPath(filepath: String) throws -> SQLiteDB {
