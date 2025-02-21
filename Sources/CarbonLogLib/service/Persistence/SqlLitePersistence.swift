@@ -4,6 +4,7 @@ import SQLite3
 public enum SQLError: Error {
     case CouldNotPrepareStatement
     case InconsistentRow
+    case CannotOpenDb
 }
 
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
@@ -17,12 +18,17 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     public func persist(log _: CarbonLog) async throws {}
 
     public func persist(measurement: CarbonMeasurement, id: String? = nil) async throws {
-        let db = openDatabase(filepath: dbFilePath.absoluteString)
+        guard let db = try? SQLiteDB.fromPath(filepath: dbFilePath.absoluteString).dbPointer else {
+            print("NIL")
+            return
+        }
         var insertStatement: OpaquePointer?
         let insertStatementString = """
           INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
-        guard sqlite3_prepare_v2(db, insertStatementString, -1, &insertStatement, nil) == SQLITE_OK else {
+
+        let prepareStatementResult = sqlite3_prepare_v2(db, insertStatementString, -1, &insertStatement, nil)
+        guard prepareStatementResult == SQLITE_OK else {
             throw SQLError.CouldNotPrepareStatement
         }
         let id: NSString = (id ?? UUID().uuidString) as NSString
@@ -49,12 +55,12 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     }
 
     public func load(measurementId id: String) throws -> CarbonMeasurement? {
-        let db = openDatabase(filepath: dbFilePath.absoluteString)
+        let db = try SQLiteDB.fromPath(filepath: dbFilePath.absoluteString)
         var selectStatement: OpaquePointer?
         let selectStatementString = """
           select date, carbonKg, comment from CarbonMeasurement where id = ?;
         """
-        guard sqlite3_prepare_v2(db, selectStatementString, -1, &selectStatement, nil) == SQLITE_OK else {
+        guard sqlite3_prepare_v2(db.dbPointer, selectStatementString, -1, &selectStatement, nil) == SQLITE_OK else {
             throw SQLError.CouldNotPrepareStatement
         }
 
@@ -77,32 +83,50 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     public func append(measurement _: CarbonMeasurement, toLogWithId _: String) async throws {}
 }
 
-func openDatabase(filepath: String) -> OpaquePointer? {
-    var db: OpaquePointer?
-    if sqlite3_open(filepath, &db) == SQLITE_OK {
-        print("Successfully opened connection to database at \(filepath)")
-        return db
-    } else {
-        print("Unable to open database.")
-        return nil
+// TODO: https://www.kodeco.com/6620276-sqlite-with-swift-tutorial-getting-started?page=3#toc-anchor-014
+struct SQLiteDB {
+    let dbPointer: OpaquePointer?
+
+    private init(dbPointer: OpaquePointer) {
+        self.dbPointer = dbPointer
     }
-}
 
-func createTable(db: OpaquePointer?, createTableString: String) {
-    var createTableStatement: OpaquePointer?
+    static func fromPath(filepath: String) throws -> SQLiteDB {
+        var db: OpaquePointer?
+        guard sqlite3_open(filepath, &db) == SQLITE_OK else { throw SQLError.CannotOpenDb }
+        return SQLiteDB(dbPointer: db!)
+    }
 
-    let prepareReturnCode = sqlite3_prepare_v2(db, createTableString, -1, &createTableStatement, nil)
+    func createMeasurementTable() throws {
+        let createTableString = """
+          CREATE TABLE "CarbonMeasurement" (
+            "id"	TEXT NOT NULL UNIQUE,
+            "carbonKg"	NUMERIC NOT NULL,
+            "date"	TEXT NOT NULL,
+            "comment"	TEXT,
+            PRIMARY KEY("id")
+          );
+        """
 
-    if prepareReturnCode == SQLITE_OK {
-        // 3
-        if sqlite3_step(createTableStatement) == SQLITE_DONE {
-            print("\ntable created.")
+        var createTableStatement: OpaquePointer?
+
+        let prepareReturnCode = sqlite3_prepare_v2(dbPointer, createTableString, -1, &createTableStatement, nil)
+
+        if prepareReturnCode == SQLITE_OK {
+            // 3
+            if sqlite3_step(createTableStatement) == SQLITE_DONE {
+                print("\ntable created.")
+            } else {
+                print("\ntable is not created.")
+            }
         } else {
-            print("\ntable is not created.")
+            print("\nCREATE TABLE statement is not prepared. code: \(prepareReturnCode)")
         }
-    } else {
-        print("\nCREATE TABLE statement is not prepared. code: \(prepareReturnCode)")
+        // 4
+        sqlite3_finalize(createTableStatement)
     }
-    // 4
-    sqlite3_finalize(createTableStatement)
+
+    //  deinit {
+//      sqlite3_close(self.dbPointer)
+    //  }
 }

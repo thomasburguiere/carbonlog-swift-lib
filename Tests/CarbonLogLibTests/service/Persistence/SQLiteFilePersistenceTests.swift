@@ -13,27 +13,32 @@ private let date2 =
 
 @Suite("SQLite Persistence")
 struct name {
-    private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
-    @Test func testName() async throws {
+    @Test("should create table only once")
+    func name2() async throws {
         let tempFolderURL = FileManager.default.temporaryDirectory
-        let tempOutFileURL = tempFolderURL.appending(component: "test.sqlite")
+        let tempOutFileURL = tempFolderURL.appending(component: "test1.sqlite")
 
         do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
 
         print(tempOutFileURL.absoluteString)
-        let db = try? #require(openDatabase(filepath: tempOutFileURL.absoluteString))
 
-        let createTableString = """
-          CREATE TABLE "CarbonMeasurement" (
-            "id"	TEXT NOT NULL UNIQUE,
-            "carbonKg"	NUMERIC NOT NULL,
-            "date"	TEXT NOT NULL,
-            "comment"	TEXT,
-            PRIMARY KEY("id")
-          );
-        """
+        let db = try! SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
 
-        createTable(db: db, createTableString: createTableString)
+        try! db.createMeasurementTable()
+        try! db.createMeasurementTable()
+    }
+
+    private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
+    @Test("should insert and retrieve single measurement") func testName() async throws {
+        let tempFolderURL = FileManager.default.temporaryDirectory
+        let tempOutFileURL = tempFolderURL.appending(component: "test2.sqlite")
+
+        do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
+
+        print(tempOutFileURL.absoluteString)
+        let db = try! SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
+
+        try! db.createMeasurementTable()
 
         let service = SQLitePersistenceService(dbPath: tempOutFileURL)
 
