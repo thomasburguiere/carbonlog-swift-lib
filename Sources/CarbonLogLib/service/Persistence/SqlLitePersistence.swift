@@ -23,10 +23,6 @@ private extension CarbonMeasurement {
     }
 }
 
-private extension String {
-    var sqliteString: UnsafePointer<CChar>? { (self as NSString).utf8String }
-}
-
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
     let formatter = ISO8601DateFormatter()
     let db: SQLiteDB
@@ -41,20 +37,20 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         let insertStatementString = """
           INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
-        let insertStatement: OpaquePointer? = try db.prepareStament(statement: insertStatementString)
+        let insertStatement: SQLiteStatement = try db.prepareStament(statement: insertStatementString)
 
         let id = id ?? UUID().uuidString
         let carbonKg = measurement.carbonKg
         let dateString = formatter.string(from: measurement.date)
         // 2
-        sqlite3_bind_text(insertStatement, 1, id.sqliteString, -1, nil)
-        sqlite3_bind_double(insertStatement, 2, carbonKg)
-        sqlite3_bind_text(insertStatement, 3, dateString.sqliteString, -1, nil)
+        insertStatement.bind(text: id, atPos: 1)
+        insertStatement.bind(double: carbonKg, pos: 2)
+        insertStatement.bind(text: dateString, atPos: 3)
         if let comment = measurement.comment {
-            sqlite3_bind_text(insertStatement, 4, comment.sqliteString, -1, nil)
+            insertStatement.bind(text: comment, atPos: 4)
         }
         // 4
-        if sqlite3_step(insertStatement) == SQLITE_DONE {
+        if insertStatement.executeStep() == SQLITE_DONE {
             print("\nSuccessfully inserted row.")
         } else {
             print("\nCould not insert row.")
@@ -69,16 +65,14 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         let selectStatementString = """
           select date, carbonKg, comment from CarbonMeasurement where id = ?;
         """
-        let selectStatement: OpaquePointer? = try db.prepareStament(statement: selectStatementString)
+        let selectStatement: SQLiteStatement = try db.prepareStament(statement: selectStatementString)
 
-        sqlite3_bind_text(selectStatement, 1, id.sqliteString, -1, nil)
-        guard sqlite3_step(selectStatement) == SQLITE_ROW else { return nil }
+        selectStatement.bind(text: id, atPos: 1)
+        guard selectStatement.executeStep() == SQLITE_ROW else { return nil }
 
-        let date: Date? = sqlite3_column_text(selectStatement, 0)
-            .flatMap { formatter.date(from: String(cString: $0)) }
-        let carbonKg: Double? = sqlite3_column_double(selectStatement, 1)
-        let comment: String? = sqlite3_column_text(selectStatement, 2)
-            .flatMap { String(cString: $0) }
+        let date: Date? = formatter.date(from: selectStatement.getRowTextCell(atPos: 0))
+        let carbonKg: Double? = selectStatement.getRowDoubleCell(atPos: 1)
+        let comment: String? = selectStatement.getRowTextCell(atPos: 2)
 
         guard let date, let carbonKg else { throw SQLError.InconsistentRow }
 
@@ -89,9 +83,47 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
 
     func createMeasurementTable() throws {
         let tableName = CarbonMeasurement.sqlTableName
-        if db.tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName) }
+        if try db.tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName) }
 
         try db.executeStatement(statement: CarbonMeasurement.sqlTableString)
+    }
+}
+
+/// SQLite stuff below
+
+private extension String {
+    var sqliteString: UnsafePointer<CChar>? { (self as NSString).utf8String }
+}
+
+struct SQLiteStatement {
+    let backingPointer: OpaquePointer?
+
+    func bind(text: String, atPos: Int32) {
+        sqlite3_bind_text(backingPointer, atPos, text.sqliteString, -1, nil)
+    }
+
+    func bind(double: Double, pos: Int32) {
+        sqlite3_bind_double(backingPointer, pos, double)
+    }
+
+    func executeStep() -> Int32 {
+        return sqlite3_step(backingPointer)
+    }
+
+    func getRowIntCell(atPos pos: Int32) -> Int {
+        return Int(sqlite3_column_int(backingPointer, pos))
+    }
+
+    func getRowDoubleCell(atPos pos: Int32) -> Double {
+        return sqlite3_column_double(backingPointer, pos)
+    }
+
+    func getRowTextCell(atPos pos: Int32) -> String {
+        return String(cString: sqlite3_column_text(backingPointer, pos))
+    }
+
+    func finalize() {
+        sqlite3_finalize(backingPointer)
     }
 }
 
@@ -103,19 +135,23 @@ struct SQLiteDB {
         self.dbPointer = dbPointer
     }
 
-    func tableExists(tableName: String) -> Bool {
+    func tableExists(tableName: String) throws -> Bool {
         let statementString = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
 
-        let tableExistsPointer: OpaquePointer? = try! prepareStament(statement: statementString)
-        sqlite3_bind_text(tableExistsPointer, 1, tableName.sqliteString, -1, nil)
-        sqlite3_step(tableExistsPointer)
+        let tableExistsStatement: SQLiteStatement = try! prepareStament(statement: statementString)
 
-        let count = sqlite3_column_int(tableExistsPointer, 0)
+        tableExistsStatement.bind(text: tableName, atPos: 1)
+        let execResult = tableExistsStatement.executeStep()
+        guard execResult == SQLITE_DONE || execResult == SQLITE_ROW else {
+            throw SQLError.SQLiteErrorWithCode("Coulnt check if table \(tableName) exists", execResult)
+        }
+
+        let count = tableExistsStatement.getRowIntCell(atPos: 0)
 
         return count > 0
     }
 
-    func prepareStament(statement: String) throws -> OpaquePointer? {
+    func prepareStament(statement: String) throws -> SQLiteStatement {
         var statementPointer: OpaquePointer?
 
         let prepareReturnCode = sqlite3_prepare_v2(dbPointer, statement, -1, &statementPointer, nil)
@@ -123,16 +159,16 @@ struct SQLiteDB {
             throw SQLError.SQLiteErrorWithCode("Could not prepare statement: \(statement)", prepareReturnCode)
         }
 
-        return statementPointer
+        return SQLiteStatement(backingPointer: statementPointer)
     }
 
     func executeStatement(statement: String) throws {
-        let statementPointer = try prepareStament(statement: statement)
+        let statementPointer: SQLiteStatement = try prepareStament(statement: statement)
         defer {
-            sqlite3_finalize(statementPointer)
+            statementPointer.finalize()
         }
 
-        let executeReturnCode = sqlite3_step(statementPointer)
+        let executeReturnCode = statementPointer.executeStep()
         guard executeReturnCode == SQLITE_DONE else { throw SQLError.SQLiteErrorWithCode("Could not execute statement: \(statement)", executeReturnCode) }
     }
 
