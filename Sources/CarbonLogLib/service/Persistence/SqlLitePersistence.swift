@@ -38,6 +38,7 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
           INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
         let insertStatement: SQLiteStatement = try db.prepareStament(statement: insertStatementString)
+        defer { insertStatement.finalize() }
 
         let id = id ?? UUID().uuidString
         let carbonKg = measurement.carbonKg
@@ -66,6 +67,7 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
           select date, carbonKg, comment from CarbonMeasurement where id = ?;
         """
         let selectStatement: SQLiteStatement = try db.prepareStament(statement: selectStatementString)
+        defer { selectStatement.finalize() }
 
         selectStatement.bind(text: id, atPos: 1)
         guard selectStatement.executeStep() == SQLITE_ROW else { return nil }
@@ -139,6 +141,7 @@ struct SQLiteDB {
         let statementString = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
 
         let tableExistsStatement: SQLiteStatement = try! prepareStament(statement: statementString)
+        defer { tableExistsStatement.finalize() }
 
         tableExistsStatement.bind(text: tableName, atPos: 1)
         let execResult = tableExistsStatement.executeStep()
@@ -164,9 +167,7 @@ struct SQLiteDB {
 
     func executeStatement(statement: String) throws {
         let statementPointer: SQLiteStatement = try prepareStament(statement: statement)
-        defer {
-            statementPointer.finalize()
-        }
+        defer { statementPointer.finalize() }
 
         let executeReturnCode = statementPointer.executeStep()
         guard executeReturnCode == SQLITE_DONE else { throw SQLError.SQLiteErrorWithCode("Could not execute statement: \(statement)", executeReturnCode) }
@@ -177,8 +178,4 @@ struct SQLiteDB {
         guard sqlite3_open(filepath, &db) == SQLITE_OK else { throw SQLError.CannotOpenDb }
         return SQLiteDB(dbPointer: db!)
     }
-
-    //  deinit {
-    //      sqlite3_close(self.dbPointer)
-    //  }
 }
