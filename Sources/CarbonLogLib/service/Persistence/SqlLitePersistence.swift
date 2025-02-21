@@ -10,24 +10,22 @@ public enum SQLError: Error {
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
     let formatter = ISO8601DateFormatter()
     let dbFilePath: URL
+    let db: SQLiteDB
 
-    init(dbPath: URL) {
+    init(dbPath: URL) throws {
         dbFilePath = dbPath
+        db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
     }
 
     public func persist(log _: CarbonLog) async throws {}
 
     public func persist(measurement: CarbonMeasurement, id: String? = nil) async throws {
-        guard let db = try? SQLiteDB.fromPath(filepath: dbFilePath.absoluteString).dbPointer else {
-            print("NIL")
-            return
-        }
         var insertStatement: OpaquePointer?
         let insertStatementString = """
           INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
 
-        let prepareStatementResult = sqlite3_prepare_v2(db, insertStatementString, -1, &insertStatement, nil)
+        let prepareStatementResult = sqlite3_prepare_v2(db.dbPointer, insertStatementString, -1, &insertStatement, nil)
         guard prepareStatementResult == SQLITE_OK else {
             throw SQLError.CouldNotPrepareStatement
         }
@@ -81,21 +79,6 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     }
 
     public func append(measurement _: CarbonMeasurement, toLogWithId _: String) async throws {}
-}
-
-// TODO: https://www.kodeco.com/6620276-sqlite-with-swift-tutorial-getting-started?page=3#toc-anchor-014
-struct SQLiteDB {
-    let dbPointer: OpaquePointer?
-
-    private init(dbPointer: OpaquePointer) {
-        self.dbPointer = dbPointer
-    }
-
-    static func fromPath(filepath: String) throws -> SQLiteDB {
-        var db: OpaquePointer?
-        guard sqlite3_open(filepath, &db) == SQLITE_OK else { throw SQLError.CannotOpenDb }
-        return SQLiteDB(dbPointer: db!)
-    }
 
     func createMeasurementTable() throws {
         let createTableString = """
@@ -110,7 +93,7 @@ struct SQLiteDB {
 
         var createTableStatement: OpaquePointer?
 
-        let prepareReturnCode = sqlite3_prepare_v2(dbPointer, createTableString, -1, &createTableStatement, nil)
+        let prepareReturnCode = sqlite3_prepare_v2(db.dbPointer, createTableString, -1, &createTableStatement, nil)
 
         if prepareReturnCode == SQLITE_OK {
             // 3
@@ -125,8 +108,23 @@ struct SQLiteDB {
         // 4
         sqlite3_finalize(createTableStatement)
     }
+}
+
+// TODO: https://www.kodeco.com/6620276-sqlite-with-swift-tutorial-getting-started?page=3#toc-anchor-014
+struct SQLiteDB {
+    fileprivate let dbPointer: OpaquePointer?
+
+    private init(dbPointer: OpaquePointer) {
+        self.dbPointer = dbPointer
+    }
+
+    static func fromPath(filepath: String) throws -> SQLiteDB {
+        var db: OpaquePointer?
+        guard sqlite3_open(filepath, &db) == SQLITE_OK else { throw SQLError.CannotOpenDb }
+        return SQLiteDB(dbPointer: db!)
+    }
 
     //  deinit {
-//      sqlite3_close(self.dbPointer)
+    //      sqlite3_close(self.dbPointer)
     //  }
 }

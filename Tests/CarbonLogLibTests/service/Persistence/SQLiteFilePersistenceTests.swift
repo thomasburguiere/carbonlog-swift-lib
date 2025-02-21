@@ -20,12 +20,10 @@ struct name {
 
         do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
 
-        print(tempOutFileURL.absoluteString)
+        let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
 
-        let db = try! SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
-
-        try! db.createMeasurementTable()
-        try! db.createMeasurementTable()
+        try! service.createMeasurementTable()
+        try! service.createMeasurementTable()
     }
 
     private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
@@ -33,14 +31,9 @@ struct name {
         let tempFolderURL = FileManager.default.temporaryDirectory
         let tempOutFileURL = tempFolderURL.appending(component: "test2.sqlite")
 
-        do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
+        let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
 
-        print(tempOutFileURL.absoluteString)
-        let db = try! SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
-
-        try! db.createMeasurementTable()
-
-        let service = SQLitePersistenceService(dbPath: tempOutFileURL)
+        try! service.createMeasurementTable()
 
         // when
         try await service.persist(measurement: cm2, id: "kurwa")
