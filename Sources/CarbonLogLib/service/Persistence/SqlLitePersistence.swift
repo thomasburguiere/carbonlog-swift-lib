@@ -1,10 +1,12 @@
 import Foundation
 import SQLite3
 
-public enum SQLError: Error {
+public enum SQLError: Error, Equatable {
     case CouldNotPrepareStatement
     case InconsistentRow
     case CannotOpenDb
+    case DuplicateTable(String)
+    case SQLiteErrorWithCode(String, Int32)
 }
 
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
@@ -81,8 +83,11 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     public func append(measurement _: CarbonMeasurement, toLogWithId _: String) async throws {}
 
     func createMeasurementTable() throws {
+        let tableName = "CarbonMeasurement"
+        if db.tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName)
+        }
         let createTableString = """
-          CREATE TABLE "CarbonMeasurement" (
+          CREATE TABLE "\(tableName)" (
             "id"	TEXT NOT NULL UNIQUE,
             "carbonKg"	NUMERIC NOT NULL,
             "date"	TEXT NOT NULL,
@@ -90,23 +95,7 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
             PRIMARY KEY("id")
           );
         """
-
-        var createTableStatement: OpaquePointer?
-
-        let prepareReturnCode = sqlite3_prepare_v2(db.dbPointer, createTableString, -1, &createTableStatement, nil)
-
-        if prepareReturnCode == SQLITE_OK {
-            // 3
-            if sqlite3_step(createTableStatement) == SQLITE_DONE {
-                print("\ntable created.")
-            } else {
-                print("\ntable is not created.")
-            }
-        } else {
-            print("\nCREATE TABLE statement is not prepared. code: \(prepareReturnCode)")
-        }
-        // 4
-        sqlite3_finalize(createTableStatement)
+        try db.executeStatement(statement: createTableString)
     }
 }
 
@@ -116,6 +105,31 @@ struct SQLiteDB {
 
     private init(dbPointer: OpaquePointer) {
         self.dbPointer = dbPointer
+    }
+
+    func tableExists(tableName: String) -> Bool {
+        let statementString = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
+        var stmtPointer: OpaquePointer?
+
+        sqlite3_prepare(dbPointer, statementString, -1, &stmtPointer, nil)
+        sqlite3_bind_text(stmtPointer, 1, (tableName as NSString).utf8String, -1, nil)
+        sqlite3_step(stmtPointer)
+
+        let count = sqlite3_column_int(stmtPointer, 0)
+
+        return count > 0
+    }
+
+    func executeStatement(statement: String) throws {
+        var statementPointer: OpaquePointer?
+
+        let prepareReturnCode = sqlite3_prepare_v2(dbPointer, statement, -1, &statementPointer, nil)
+        guard prepareReturnCode == SQLITE_OK else { throw SQLError.SQLiteErrorWithCode("Could not prepare statement: \(statement)", prepareReturnCode) }
+
+        let executeReturnCode = sqlite3_step(statementPointer)
+        guard executeReturnCode == SQLITE_DONE else { throw SQLError.SQLiteErrorWithCode("Could not execute statement: \(statement)", executeReturnCode) }
+
+        sqlite3_finalize(statementPointer)
     }
 
     static func fromPath(filepath: String) throws -> SQLiteDB {

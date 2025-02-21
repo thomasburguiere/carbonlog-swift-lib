@@ -11,25 +11,32 @@ private let date2 =
     calendar
         .date(from: DateComponents(timeZone: gmt, year: 2022, month: 1, day: 2, hour: 12))!
 
+func ensureEmptyTempFile(filename: String) -> URL {
+    let tempFolderURL = FileManager.default.temporaryDirectory
+    let tempOutFileURL = tempFolderURL.appending(component: filename)
+
+    do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
+    return tempOutFileURL
+}
+
 @Suite("SQLite Persistence")
 struct name {
-    @Test("should create table only once")
+    @Test("should create table only once and throw error when duplicating it")
     func name2() async throws {
-        let tempFolderURL = FileManager.default.temporaryDirectory
-        let tempOutFileURL = tempFolderURL.appending(component: "test1.sqlite")
-
-        do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
+        let tempOutFileURL = ensureEmptyTempFile(filename: "test1.sqlite")
 
         let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
 
         try! service.createMeasurementTable()
-        try! service.createMeasurementTable()
+        #expect(
+            throws: SQLError.DuplicateTable("CarbonMeasurement"),
+            performing: service.createMeasurementTable
+        )
     }
 
     private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
     @Test("should insert and retrieve single measurement") func testName() async throws {
-        let tempFolderURL = FileManager.default.temporaryDirectory
-        let tempOutFileURL = tempFolderURL.appending(component: "test2.sqlite")
+        let tempOutFileURL = ensureEmptyTempFile(filename: "test2.sqlite")
 
         let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
 
