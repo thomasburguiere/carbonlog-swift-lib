@@ -9,6 +9,20 @@ public enum SQLError: Error, Equatable {
     case SQLiteErrorWithCode(String, Int32)
 }
 
+private extension CarbonMeasurement {
+    static var sqlTableName: String { "CarbonMeasurement" }
+    static var sqlTableString: String { """
+      CREATE TABLE "\(sqlTableName)" (
+        "id"    TEXT NOT NULL UNIQUE,
+        "carbonKg"    NUMERIC NOT NULL,
+        "date"    TEXT NOT NULL,
+        "comment"    TEXT,
+        PRIMARY KEY("id")
+      );
+    """
+    }
+}
+
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
     let formatter = ISO8601DateFormatter()
     let dbFilePath: URL
@@ -75,19 +89,10 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     public func append(measurement _: CarbonMeasurement, toLogWithId _: String) async throws {}
 
     func createMeasurementTable() throws {
-        let tableName = "CarbonMeasurement"
-        if db.tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName)
-        }
-        let createTableString = """
-          CREATE TABLE "\(tableName)" (
-            "id"	TEXT NOT NULL UNIQUE,
-            "carbonKg"	NUMERIC NOT NULL,
-            "date"	TEXT NOT NULL,
-            "comment"	TEXT,
-            PRIMARY KEY("id")
-          );
-        """
-        try db.executeStatement(statement: createTableString)
+        let tableName = CarbonMeasurement.sqlTableName
+        if db.tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName) }
+
+        try db.executeStatement(statement: CarbonMeasurement.sqlTableString)
     }
 }
 
