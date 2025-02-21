@@ -20,9 +20,9 @@ func ensureEmptyTempFile(filename: String) -> URL {
 }
 
 @Suite("SQLite Persistence")
-struct name {
+struct SqlitePersistenceTests {
     @Test("should create table only once and throw error when duplicating it")
-    func name2() async throws {
+    func shouldThrowWhenCreatingTableTwice() async throws {
         let tempOutFileURL = ensureEmptyTempFile(filename: "test1.sqlite")
 
         let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
@@ -35,7 +35,8 @@ struct name {
     }
 
     private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
-    @Test("should insert and retrieve single measurement") func testName() async throws {
+    @Test("should insert and retrieve single measurement")
+    func shouldInsertAndLoadMeasurment() async throws {
         let tempOutFileURL = ensureEmptyTempFile(filename: "test2.sqlite")
 
         let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
