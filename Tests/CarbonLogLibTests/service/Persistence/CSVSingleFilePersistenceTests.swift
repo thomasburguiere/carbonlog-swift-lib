@@ -57,7 +57,8 @@ struct SingleCSVPersistenceTests {
         let additionalMeasurement = CarbonMeasurement(
             by: CarbonEquivalent(type: .carKm, amount: 250),
             at: date3,
-            comment: "appended measurement"
+            comment: "appended measurement",
+            id: "id-4"
         )
 
         // when
@@ -66,10 +67,11 @@ struct SingleCSVPersistenceTests {
         // then
         let updatedLog = try #require(await service.load(id: "noop"))
         #expect(updatedLog.measurements.count == 3)
-        let persistedAdditionalMeasurement = updatedLog.measurements.first { $0.comment == "appended measurement" }
+        let persistedAdditionalMeasurement = updatedLog.measurements.first { $0.id == "id-4" }
         #expect(persistedAdditionalMeasurement != nil)
         #expect(persistedAdditionalMeasurement?.date.description == "2022-01-03 12:00:00 +0000")
         #expect(persistedAdditionalMeasurement?.carbonKg == 93)
+        #expect(persistedAdditionalMeasurement?.comment == "appended measurement")
     }
 
     @Test("Should load CarbonLog from CSV")
@@ -97,7 +99,7 @@ struct SingleCSVPersistenceTests {
         #expect(loadedLog == nil)
     }
 
-    @Test("Should return handle CSV with mixed valid invalid content")
+    @Test("Should handle CSV with mixed valid invalid content")
     func handleMixedGarbageCsv() async throws {
         let service = LocalFilePersistenceService(
             fileURL: getInputFileCopyURL(fileName: "test-mixed-input"),
