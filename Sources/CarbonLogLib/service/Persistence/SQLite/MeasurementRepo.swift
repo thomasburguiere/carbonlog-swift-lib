@@ -1,7 +1,14 @@
 import Foundation
 
-private let sqlTableName: String = "CarbonMeasurement"
+public protocol MeasurementRepo {
+    func create(measurement: CarbonMeasurement, forLogId: String) throws
+    func read(measurementId: String) throws -> CarbonMeasurement?
+    func delete(measurement: CarbonMeasurement) throws
+    func update(measurement: CarbonMeasurement) throws
+    func exists(measurement: CarbonMeasurement) throws -> Bool
+}
 
+private let tableName: String = "CarbonMeasurement"
 private enum Col: String {
     case id
     case carbonKg
@@ -10,8 +17,8 @@ private enum Col: String {
     case logId
 }
 
-private let sqlCreateTableString: String = """
-  CREATE TABLE "\(sqlTableName)" (
+private let createTableString: String = """
+  CREATE TABLE "\(tableName)" (
     "\(Col.id)"        TEXT NOT NULL UNIQUE,
     "\(Col.carbonKg)"  NUMERIC NOT NULL,
     "\(Col.date)"	    TEXT NOT NULL,
@@ -22,18 +29,24 @@ private let sqlCreateTableString: String = """
   );
 """
 
-protocol MeasurementRepo {
-    func create(measurement: CarbonMeasurement, forLogId: String) throws
-    func read(measurementId: String) throws -> CarbonMeasurement?
-    func delete(measurement: CarbonMeasurement) throws
-    func update(measurement: CarbonMeasurement) throws
-}
-
 struct SQLiteMeasurementRepo: MeasurementRepo {
+    let db: SQLiteDB
+    let formatter = ISO8601DateFormatter()
+
+    init(db: SQLiteDB) throws {
+        self.db = db
+        try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
+    }
+
+    func exists(measurement _: CarbonMeasurement) throws -> Bool {
+        let query = "SELECT COUNT(*) FROM \(tableName) WHERE \(Col.id) = ?"
+        return false
+    }
+
     func read(measurementId id: String) throws -> CarbonMeasurement? {
         let selectStatementString = """
           SELECT \(Col.date), \(Col.carbonKg), \(Col.comment)
-          FROM \(sqlTableName)
+          FROM \(tableName)
           WHERE \(Col.id) = ?;
         """
         let selectStatement: SQLiteStatement = try db.prepareStament(statement: selectStatementString)
@@ -51,12 +64,9 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         return CarbonMeasurement(kg: carbonKg, at: date, comment: comment)
     }
 
-    let db: SQLiteDB
-    let formatter = ISO8601DateFormatter()
-
     func create(measurement: CarbonMeasurement, forLogId logId: String) throws {
         let insertStatementString = """
-            INSERT INTO \(sqlTableName) (
+            INSERT INTO \(tableName) (
             \(Col.id),
             \(Col.carbonKg),
             \(Col.date),
@@ -87,7 +97,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
 
     func update(measurement: CarbonMeasurement) throws {
         let query = """
-            UPDATE \(sqlTableName)
+            UPDATE \(tableName)
             SET
                  \(Col.carbonKg) = ?,
                  \(Col.date)     = ?,
@@ -116,7 +126,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
     }
 
     func delete(measurement: CarbonMeasurement) throws {
-        let deleteString = "DELETE from \(sqlTableName) WHERE id = ?"
+        let deleteString = "DELETE from \(tableName) WHERE id = ?"
         let statement = try db.prepareStament(statement: deleteString)
         defer { statement.finalize() }
 

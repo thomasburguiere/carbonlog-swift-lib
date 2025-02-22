@@ -28,7 +28,7 @@ private let co2ToEqCases = [
     CarbonToEqTestCase(co2Kg: 1.0, type: .beefMeal, expectedEqAmount: 0.14),
 ]
 
-@Suite("Carbon Conversion tets")
+@Suite("Carbon Conversion tests")
 struct CarbonConverterTests {
     @Test("should convert equivalent amounts to carbon Kgs", arguments: eqToCo2Cases)
     fileprivate func shouldConvertToKg(tc: EqToCarbonTestCase) async throws {

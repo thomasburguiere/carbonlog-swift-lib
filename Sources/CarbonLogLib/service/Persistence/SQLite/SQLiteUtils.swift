@@ -62,6 +62,25 @@ struct SQLiteDB {
 
     private init(dbPointer: OpaquePointer) {
         self.dbPointer = dbPointer
+        do { try enableFkSupport() } catch {}
+    }
+
+    private func enableFkSupport() throws {
+        let query = "PRAGMA foreign_keys = ON;"
+        try executeStatement(statement: query)
+    }
+
+    func createTable(_ tableName: String, withCreateQuery query: String) throws {
+        if try tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName) }
+
+        try executeStatement(statement: query)
+    }
+
+    func createTableIfNotExist(_ tableName: String, withCreateQuery query: String) throws {
+        let exists = (try? tableExists(tableName: tableName)) ?? false
+        if !exists {
+            try createTable(tableName, withCreateQuery: query)
+        }
     }
 
     func tableExists(tableName: String) throws -> Bool {
