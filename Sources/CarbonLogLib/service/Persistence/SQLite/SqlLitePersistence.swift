@@ -24,7 +24,8 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     }
 
     public func persist(log _: CarbonLog) async throws {}
-    public func insert(log: CarbonLog) async throws {
+
+    func insert(log: CarbonLog) async throws {
         try logRepo.create(log: log)
     }
 
@@ -37,11 +38,16 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         guard exists == false else {
             throw PersistenceError.inconsistentOperation("Trying to append a measurement which already exists")
         }
-        try insert(measurement: measurement, forLogId: logId)
+        try measurementRepo.create(measurement: measurement, forLogId: logId)
     }
 
-    public func insert(measurement: CarbonMeasurement, forLogId logId: String) throws {
-        try measurementRepo.create(measurement: measurement, forLogId: logId)
+    func persist(measurement: CarbonMeasurement, forLogId logId: LogId) throws {
+        let exists = try measurementRepo.read(measurementId: measurement.id) != nil
+        if exists {
+            try measurementRepo.update(measurement: measurement)
+        } else {
+            try measurementRepo.create(measurement: measurement, forLogId: logId)
+        }
     }
 
     public func delete(measurement: CarbonMeasurement) throws {
@@ -50,9 +56,5 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
 
     public func load(measurementId id: String) throws -> CarbonMeasurement? {
         return try measurementRepo.read(measurementId: id)
-    }
-
-    public func update(measurement: CarbonMeasurement) throws {
-        try measurementRepo.update(measurement: measurement)
     }
 }

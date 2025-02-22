@@ -79,7 +79,7 @@ struct SqlitePersistenceTests {
             try! await service.insert(log: log)
 
             // when
-            try service.insert(measurement: cm2, forLogId: log.id)
+            try service.persist(measurement: cm2, forLogId: log.id)
             // then
             let persisted = try #require(try service.load(measurementId: "id-2"))
             #expect(persisted.carbonKg == 42)
@@ -103,8 +103,8 @@ struct SqlitePersistenceTests {
             try! await service.insert(log: log)
 
             // given
-            try service.insert(measurement: cm2, forLogId: log.id)
-            let persisted = try #require(try service.load(measurementId: "id-2"))
+            try service.persist(measurement: cm2, forLogId: log.id)
+            let persisted: CarbonMeasurement = try #require(try service.load(measurementId: "id-2"))
             #expect(persisted.carbonKg == 42)
 
             // when
@@ -115,7 +115,7 @@ struct SqlitePersistenceTests {
                 id: cm2.id
             )
             print(tempOutFileURL)
-            try service.update(measurement: updatedMeasurement)
+            try service.persist(measurement: updatedMeasurement, forLogId: log.id)
             let persistedUpdated = try #require(try service.load(measurementId: "id-2"))
 
             // then
@@ -132,7 +132,7 @@ struct SqlitePersistenceTests {
             // given
             print(tempOutFileURL.absoluteString)
             #expect(throws: Error.self) {
-                try service.insert(measurement: cm2, forLogId: "NOOP")
+                try service.persist(measurement: cm2, forLogId: "NOOP")
             }
         }
 
