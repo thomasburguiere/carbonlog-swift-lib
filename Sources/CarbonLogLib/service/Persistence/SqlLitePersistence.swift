@@ -32,14 +32,14 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
 
     public func persist(log _: CarbonLog) async throws {}
 
-    public func persist(measurement: CarbonMeasurement, id: String? = nil) async throws {
+    public func persist(measurement: CarbonMeasurement) async throws {
         let insertStatementString = """
           INSERT INTO CarbonMeasurement (id, carbonKg, date, comment) VALUES (?, ?, ?, ?);
         """
         let insertStatement: SQLiteStatement = try db.prepareStament(statement: insertStatementString)
         defer { insertStatement.finalize() }
 
-        let id = id ?? UUID().uuidString
+        let id = measurement.id
         let carbonKg = measurement.carbonKg
         let dateString = formatter.string(from: measurement.date)
         // 2

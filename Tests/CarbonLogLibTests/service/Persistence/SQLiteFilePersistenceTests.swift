@@ -34,7 +34,12 @@ struct SqlitePersistenceTests {
         )
     }
 
-    private let cm2 = CarbonMeasurement(kg: 42.0, at: date2, comment: "kurwa comment")
+    private let cm2 = CarbonMeasurement(
+        kg: 42.0,
+        at: date2,
+        comment: "kurwa comment",
+        id: "id-2"
+    )
     @Test("should insert and retrieve single measurement")
     func shouldInsertAndLoadMeasurment() async throws {
         let tempOutFileURL = ensureEmptyTempFile(filename: "test2.sqlite")
@@ -44,8 +49,8 @@ struct SqlitePersistenceTests {
         try! service.createMeasurementTable()
 
         // when
-        try await service.persist(measurement: cm2, id: "kurwa")
-        let persisted = try #require(try service.load(measurementId: "kurwa"))
+        try await service.persist(measurement: cm2)
+        let persisted = try #require(try service.load(measurementId: "id-2"))
 
         #expect(persisted.carbonKg == 42)
         #expect(persisted.date.description == "2022-01-02 12:00:00 +0000")
