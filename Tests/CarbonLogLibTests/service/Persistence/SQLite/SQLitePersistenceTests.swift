@@ -96,4 +96,17 @@ struct SqlitePersistenceTests {
         #expect(persistedUpdated.carbonKg == 666)
         #expect(persistedUpdated.comment == "updated comment")
     }
+
+    @Test("Should throw error when persisting measurement referring a non existing log")
+    func shouldNotInsertMeasurementWithWrongLogReference() throws {
+        let tempOutFileURL = ensureEmptyTempFile(filename: "test4.sqlite")
+
+        let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+        try! service.createTables()
+
+        // given
+        #expect(throws: Error.self) {
+            try service.insert(measurement: cm2, forLogId: "NOOP")
+        }
+    }
 }
