@@ -8,6 +8,10 @@ public enum SQLError: Error, Equatable {
     case SQLiteErrorWithStatus(String, SQLiteStatus)
 }
 
+public enum PersistenceError: Error, Equatable {
+    case inconsistentOperation(String? = nil)
+}
+
 public struct SQLitePersistenceService: CarbonLogPersistenceService {
     let formatter = ISO8601DateFormatter()
     let measurementRepo: MeasurementRepo
@@ -28,7 +32,13 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         return nil
     }
 
-    public func append(measurement _: CarbonMeasurement, toLogWithId _: String) async throws {}
+    public func append(measurement: CarbonMeasurement, toLogWithId logId: LogId) async throws {
+        let exists = try measurementRepo.read(measurementId: measurement.id) != nil
+        guard exists == false else {
+            throw PersistenceError.inconsistentOperation("Trying to append a measurement which already exists")
+        }
+        try insert(measurement: measurement, forLogId: logId)
+    }
 
     public func insert(measurement: CarbonMeasurement, forLogId logId: String) throws {
         try measurementRepo.create(measurement: measurement, forLogId: logId)

@@ -1,11 +1,16 @@
 import Foundation
 
+public typealias LogId = String
 public protocol MeasurementRepo {
     func create(measurement: CarbonMeasurement, forLogId: String) throws
     func read(measurementId: String) throws -> CarbonMeasurement?
     func delete(measurement: CarbonMeasurement) throws
     func update(measurement: CarbonMeasurement) throws
-    func exists(measurement: CarbonMeasurement) throws -> Bool
+}
+
+struct CarbonMeasurementEntity {
+    let measurement: CarbonMeasurement
+    let logId: String
 }
 
 private let tableName: String = "CarbonMeasurement"
@@ -28,7 +33,6 @@ private let createTableString: String = """
     FOREIGN KEY(\(Col.logId)) REFERENCES "CarbonLog"("id")
   );
 """
-
 struct SQLiteMeasurementRepo: MeasurementRepo {
     let db: SQLiteDB
     let formatter = ISO8601DateFormatter()
@@ -36,11 +40,6 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
     init(db: SQLiteDB) throws {
         self.db = db
         try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
-    }
-
-    func exists(measurement _: CarbonMeasurement) throws -> Bool {
-        let query = "SELECT COUNT(*) FROM \(tableName) WHERE \(Col.id) = ?"
-        return false
     }
 
     func read(measurementId id: String) throws -> CarbonMeasurement? {
@@ -59,7 +58,9 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         let carbonKg: Double? = selectStatement.getRowDoubleCell(atPos: 1)
         let comment: String? = selectStatement.getRowTextCell(atPos: 2)
 
-        guard let date, let carbonKg else { throw SQLError.InconsistentRow }
+        guard let date, let carbonKg else {
+            throw SQLError.InconsistentRow
+        }
 
         return CarbonMeasurement(kg: carbonKg, at: date, comment: comment)
     }

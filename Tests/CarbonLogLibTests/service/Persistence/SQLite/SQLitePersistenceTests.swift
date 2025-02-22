@@ -135,5 +135,21 @@ struct SqlitePersistenceTests {
                 try service.insert(measurement: cm2, forLogId: "NOOP")
             }
         }
+
+        @Test("Should throw error when appending same measurement twice")
+        func shouldThrowErrorWhenAppendingExisting() async throws {
+            let tempOutFileURL = ensureEmptyTempFile(filename: "test5.sqlite")
+            let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+
+            let log = CarbonLog()
+            try await service.insert(log: log)
+            try await service.append(measurement: cm2, toLogWithId: log.id)
+
+            await #expect(throws: PersistenceError
+                .inconsistentOperation("Trying to append a measurement which already exists"))
+            {
+                try await service.append(measurement: cm2, toLogWithId: log.id)
+            }
+        }
     }
 }
