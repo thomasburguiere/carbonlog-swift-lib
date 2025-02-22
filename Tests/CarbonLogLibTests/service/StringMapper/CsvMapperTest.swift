@@ -16,8 +16,8 @@ private let date3 =
 
 @Suite("CSV extensions")
 struct CsvExtensions {
-    private let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
-    private let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
+    private let cm2 = CarbonMeasurement(kg: 2.0, at: date2, id: "id-2")
+    private let cm3 = CarbonMeasurement(kg: 3.0, at: date3, id: "id-3")
 
     @Test("shoud dump measurement to CSV row")
     func shouldGenerateMeasurementCsv() throws {
@@ -26,48 +26,50 @@ struct CsvExtensions {
         let result3 = cm3.csvString
 
         // then
-        #expect(result2 == "2022-01-02T12:00:00Z,2.00")
-        #expect(result3 == "2022-01-03T12:00:00Z,3.00")
+        #expect(result2 == "2022-01-02T12:00:00Z,2.00,id-2")
+        #expect(result3 == "2022-01-03T12:00:00Z,3.00,id-3")
     }
 
     @Test("shoud dump measurement to CSV row with custom comment")
     func shouldGenerateMeasurementCsvWithComment() throws {
         let eq = CarbonEquivalent(type: .carKm, amount: 300)
-        let cm = CarbonMeasurement(by: eq, at: date2, comment: "test comment")
+        let cm = CarbonMeasurement(by: eq, at: date2, comment: "test comment", id: "id")
         // when
         let result = cm.csvString
 
         // then
-        #expect(result == "2022-01-02T12:00:00Z,111.60,test comment")
+        #expect(result == "2022-01-02T12:00:00Z,111.60,id,test comment")
     }
 
     @Test("shoud dump measurement to CSV row with comment based on equivalent description")
     func shouldGenerateMeasurementCsvWithCommentFromEquivalent() throws {
         let eq = CarbonEquivalent(type: .carKm, amount: 300)
-        let cm = CarbonMeasurement(by: eq, at: date2)
+        let cm = CarbonMeasurement(by: eq, at: date2, id: "id")
         // when
         let result = cm.csvString
 
         // then
-        #expect(result == "2022-01-02T12:00:00Z,111.60,300.00 carKm")
+        #expect(result == "2022-01-02T12:00:00Z,111.60,id,300.00 carKm")
     }
 
     @Test("should load CarbonMeasurement from CSV row")
     func initCmCsvString() throws {
-        let csv = "2022-01-01T23:00:00Z,2.0"
+        let csv = "2022-01-01T23:00:00Z,2.0,my-id,"
 
         let cm = try CarbonMeasurement(csvString: csv)
 
         #expect(cm.carbonKg == 2.0)
+        #expect(cm.comment == nil)
     }
 
     @Test("should load CarbonMeasurement with comment from CSV row")
     func initCmCsvStringComment() throws {
-        let csv = "2022-01-01T23:00:00Z,2.0,comment"
+        let csv = "2022-01-01T23:00:00Z,2.0,my-id,comment"
 
         let cm = try CarbonMeasurement(csvString: csv)
 
         #expect(cm.carbonKg == 2.0)
+        #expect(cm.id == "my-id")
         #expect(cm.comment == "comment")
     }
 
@@ -80,7 +82,7 @@ struct CsvExtensions {
 
         // then
         let expected =
-            "2022-01-02T12:00:00Z,2.00" + "\n" + "2022-01-03T12:00:00Z,3.00" + "\n"
+            "2022-01-02T12:00:00Z,2.00,id-2" + "\n" + "2022-01-03T12:00:00Z,3.00,id-3" + "\n"
         #expect(result == expected)
     }
 
@@ -95,7 +97,7 @@ struct CsvExtensions {
 
     @Test("should throw Error when measurement date cannot be parsed from CSV string")
     func invalidDateInCsv() async throws {
-        let csvWithInvalidDate = "wrongDate,2.0"
+        let csvWithInvalidDate = "wrongDate,2.0,my-id"
 
         #expect(throws: CsvError.invalidCarbonMeasurementInCsv) {
             try CarbonMeasurement(csvString: csvWithInvalidDate)
@@ -104,7 +106,7 @@ struct CsvExtensions {
 
     @Test("should throw Error when measurement carbonKg cannot be parsed from CSV string")
     func invalidCarbonKgInCsv() async throws {
-        let csvWithInvalidCarbonKg = "2022-01-01T23:00:00Z,invalidKg"
+        let csvWithInvalidCarbonKg = "2022-01-01T23:00:00Z,invalidKg,my-id"
 
         #expect(throws: CsvError.invalidCarbonMeasurementInCsv) {
             try CarbonMeasurement(csvString: csvWithInvalidCarbonKg)
