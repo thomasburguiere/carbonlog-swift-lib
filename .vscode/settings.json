@@ -2,5 +2,7 @@
   "swift.path": "/usr/bin",
   "swift.swiftEnvironmentVariables": {
     "DEVELOPER_DIR": "/Applications/Xcode.app"
-  }
+  },
+  "swiftformat.enable": true,
+  "swiftformat.options": ["--indent", "4"],
 }
