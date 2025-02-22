@@ -5,16 +5,21 @@ private extension String {
     var sqliteString: UnsafePointer<CChar>? { (self as NSString).utf8String }
 }
 
-public enum SQLiteStatus: CaseIterable, Sendable {
+public enum SQLiteStatus: Sendable, Equatable {
     case Done
     case Row
-    case Unknown
+    case GeneralError
+    case Constraint
+    case Unknown(Int)
 
     static func of(_ i32: Int32) -> SQLiteStatus {
-        if i32 == SQLITE_DONE { return .Done }
-        if i32 == SQLITE_ROW { return .Row }
-
-        return .Unknown
+        switch i32 {
+        case SQLITE_DONE: return .Done
+        case SQLITE_ROW: return .Row
+        case SQLITE_ERROR: return .GeneralError
+        case SQLITE_CONSTRAINT: return .Constraint
+        default: return .Unknown(Int(i32))
+        }
     }
 }
 
@@ -25,8 +30,8 @@ struct SQLiteStatement {
         sqlite3_bind_text(backingPointer, atPos, text.sqliteString, -1, nil)
     }
 
-    func bind(double: Double, pos: Int32) {
-        sqlite3_bind_double(backingPointer, pos, double)
+    func bind(double: Double, atPos: Int32) {
+        sqlite3_bind_double(backingPointer, atPos, double)
     }
 
     func executeStep() -> SQLiteStatus {
