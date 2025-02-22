@@ -17,8 +17,8 @@ private let date3 =
 
 @Suite("JSON extensions")
 struct JsonExtensionsTest {
-    private let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
-    private let cm3 = CarbonMeasurement(kg: 3.0, at: date3, comment: "my comment")
+    private let cm2 = CarbonMeasurement(kg: 2.0, at: date2, id: "id-2")
+    private let cm3 = CarbonMeasurement(kg: 3.0, at: date3, comment: "my comment", id: "id-3")
 
     let mapper = JsonMapper()
 
@@ -28,6 +28,7 @@ struct JsonExtensionsTest {
         let jsonString = mapper.logToString(log: log)
 
         #expect(jsonString?.contains(#""date":"2022-01-02T12:00:00Z""#) == true)
+        #expect(jsonString?.contains(#""id":"id-2""#) == true)
         #expect(jsonString?.contains(#""carbonKg":2"#) == true)
     }
 
@@ -38,6 +39,7 @@ struct JsonExtensionsTest {
 
         #expect(jsonString?.contains(#""date":"2022-01-03T12:00:00Z""#) == true)
         #expect(jsonString?.contains(#""carbonKg":3"#) == true)
+        #expect(jsonString?.contains(#""id":"id-3""#) == true)
         #expect(jsonString?.contains(#""comment":"my comment"#) == true)
     }
 
@@ -59,8 +61,8 @@ struct JsonExtensionsTest {
         let jsonString = """
         {
           "measurements":[
-            {"date":"2022-01-02T12:00:00Z","carbonKg":2},
-            {"date":"2022-01-03T12:00:00Z","carbonKg":3,"comment":"my comment"}
+            {"date":"2022-01-02T12:00:00Z","carbonKg":2,"id":"id-2"},
+            {"date":"2022-01-03T12:00:00Z","carbonKg":3,"id":"id-3","comment":"my comment"}
           ],
           "id":"my-id"
         }
@@ -68,8 +70,10 @@ struct JsonExtensionsTest {
 
         let log = try #require(mapper.stringToLog(string: jsonString))
         #expect(log.id == "my-id")
-        let parsedCm2 = log.measurements.first { $0.carbonKg == 2 }
-        let parsedCm3 = log.measurements.first { $0.carbonKg == 3 }
+        let parsedCm2 = log.measurements.first { $0.id == "id-2" }
+        let parsedCm3 = log.measurements.first { $0.id == "id-3" }
+        #expect(parsedCm2?.carbonKg == 2)
+        #expect(parsedCm3?.carbonKg == 3)
         #expect(parsedCm2?.date.ISO8601Format() == "2022-01-02T12:00:00Z")
         #expect(parsedCm3?.date.ISO8601Format() == "2022-01-03T12:00:00Z")
         #expect(parsedCm3?.comment == "my comment")

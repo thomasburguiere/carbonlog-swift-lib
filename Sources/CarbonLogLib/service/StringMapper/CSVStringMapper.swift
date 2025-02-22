@@ -19,12 +19,12 @@ extension CarbonMeasurement {
     var csvString: String {
         let isoDateString = ISO8601DateFormatter().string(from: date)
 
-        let dateAndAmountCsv = "\(isoDateString),\(String(format: "%.2f", carbonKg))"
+        let mandatoryPart = "\(isoDateString),\(String(format: "%.2f", carbonKg)),\(id)"
 
         let finalCsv: String = if let comment {
-            dateAndAmountCsv + "," + comment
+            mandatoryPart + "," + comment
         } else {
-            dateAndAmountCsv
+            mandatoryPart
         }
 
         return finalCsv
@@ -32,20 +32,22 @@ extension CarbonMeasurement {
 
     init(csvString: String) throws {
         let parts = csvString.split(separator: ",")
-        if parts.count < 2 {
+        if parts.count < 3 {
             throw CsvError.unparseableCsvString
         }
 
         let date = ISO8601DateFormatter().date(from: String(parts[0]))
         let carbonKg = Double(String(parts[1]))
+        let id = String(parts[2])
 
         guard let date, let carbonKg else {
             throw CsvError.invalidCarbonMeasurementInCsv
         }
         self.date = date
         self.carbonKg = carbonKg
-        if parts.count > 2 {
-            comment = String(parts[2])
+        self.id = id
+        if parts.count > 3 {
+            comment = String(parts[3])
         } else {
             comment = nil
         }
