@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LocalFilePersistenceService: CarbonLogPersistenceService {
+public struct LocalStringFilePersistenceService: CarbonLogPersistenceService {
     let fileURL: URL
     let mapper: CarbonLogStringMapper
 
