@@ -25,7 +25,7 @@ struct CarbonLogTests {
     @Test
     func should_init_with_default_id_and_empty_measurements() async throws {
         // when
-        let log = CarbonLog()
+        let log = CarbonLog(id: "id")
 
         // then
         #expect(log.id.count >= 0, "expected log id '\(log.id)', to be non empty string")
@@ -37,7 +37,7 @@ struct CarbonLogTests {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         // when
         let result = log.getRangeCarbonKgs(from: date1, to: date4)
@@ -51,7 +51,7 @@ struct CarbonLogTests {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         let addedCm = CarbonMeasurement(kg: 11.0, at: date2)
 
@@ -69,7 +69,7 @@ struct CarbonLogTests {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         // when
         let result = log.getRangeCarbonKgs(from: date4, to: date4)
@@ -83,7 +83,7 @@ struct CarbonLogTests {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         // when
         let result = log.getRangeCarbonKgs(from: date3, to: date4)
@@ -97,7 +97,7 @@ struct CarbonLogTests {
         // given
         let cm2 = CarbonMeasurement(kg: 2.0, at: date2)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date3)
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         // when
         let result = log.getRangeCarbonKgs(from: date3, to: date4, inclusive: true)
@@ -112,7 +112,7 @@ struct CarbonLogTests {
         let todayDate = Date()
         let cm2 = CarbonMeasurement(kg: 2.0, at: todayDate)
         let cm3 = CarbonMeasurement(kg: 3.0, at: date_2021)
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         // when
         let result = log.getCurrentYearCarbonKgs()

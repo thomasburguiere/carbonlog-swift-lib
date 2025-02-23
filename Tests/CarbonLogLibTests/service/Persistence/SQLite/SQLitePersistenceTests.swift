@@ -42,7 +42,9 @@ struct SqlitePersistenceTests {
             }
         }
 
-        @Test("should create table only once and not throw error when calling createTableIfNotExist() twice")
+        @Test(
+            "should create table only once and not throw error when calling createTableIfNotExist() twice"
+        )
         func shouldNotThrowWhenTryCreatingTableTwice() async throws {
             let tempOutFileURL = ensureEmptyTempFile(filename: "test1b.sqlite")
 
@@ -63,92 +65,137 @@ struct SqlitePersistenceTests {
 
     @Suite("SqlPersistenceService")
     struct SqlitePersistenceServiceTests {
-        private let cm2 = CarbonMeasurement(
-            kg: 42.0,
-            at: date2,
-            comment: "kurwa comment",
-            id: "id-2"
-        )
-        @Test("should insert, load and delete single measurement")
-        func shouldInsertLoadAndDeleteMeasurment() async throws {
-            let tempOutFileURL = ensureEmptyTempFile(filename: "test2.sqlite")
-
-            let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
-
-            let log = CarbonLog()
-            try! await service.insert(log: log)
-
-            // when
-            try service.persist(measurement: cm2, forLogId: log.id)
-            // then
-            let persisted = try #require(try service.load(measurementId: "id-2"))
-            #expect(persisted.carbonKg == 42)
-            #expect(persisted.date.description == "2022-01-02 12:00:00 +0000")
-            #expect(persisted.comment == "kurwa comment")
-
-            // when
-            try service.delete(measurement: cm2)
-            // then
-            let deleted = try service.load(measurementId: "id-2")
-            #expect(deleted == nil)
-        }
-
-        @Test("should update single measurement")
-        func shouldUpdateMeasurement() async throws {
-            let tempOutFileURL = ensureEmptyTempFile(filename: "test3.sqlite")
-
-            let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
-
-            let log = CarbonLog()
-            try! await service.insert(log: log)
-
-            // given
-            try service.persist(measurement: cm2, forLogId: log.id)
-            let persisted: CarbonMeasurement = try #require(try service.load(measurementId: "id-2"))
-            #expect(persisted.carbonKg == 42)
-
-            // when
-            let updatedMeasurement = CarbonMeasurement(
-                kg: 666,
-                at: cm2.date.addingTimeInterval(86400), // + 1 day
-                comment: "updated comment",
-                id: cm2.id
+        @Suite("Measurement Tests")
+        struct MeasurementTests {
+            private let cm2 = CarbonMeasurement(
+                kg: 42.0,
+                at: date2,
+                comment: "kurwa comment",
+                id: "id-2"
             )
-            print(tempOutFileURL)
-            try service.persist(measurement: updatedMeasurement, forLogId: log.id)
-            let persistedUpdated = try #require(try service.load(measurementId: "id-2"))
 
-            // then
-            #expect(persistedUpdated.carbonKg == 666)
-            #expect(persistedUpdated.comment == "updated comment")
-        }
+            @Test("should insert, load and delete single measurement")
+            func shouldInsertLoadAndDeleteMeasurment() async throws {
+                let tempOutFileURL = ensureEmptyTempFile(filename: "test2.sqlite")
 
-        @Test("Should throw error when persisting measurement referring a non existing log")
-        func shouldNotInsertMeasurementWithWrongLogReference() throws {
-            let tempOutFileURL = ensureEmptyTempFile(filename: "test4.sqlite")
+                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
 
-            let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+                let log = CarbonLog(id: "another-log")
+                try! await service.insert(log: log)
 
-            // given
-            print(tempOutFileURL.absoluteString)
-            #expect(throws: Error.self) {
-                try service.persist(measurement: cm2, forLogId: "NOOP")
+                // when
+                try service.persist(measurement: cm2, forLogId: log.id)
+                // then
+                let persisted = try #require(try service.load(measurementId: "id-2"))
+                #expect(persisted.carbonKg == 42)
+                #expect(persisted.date.description == "2022-01-02 12:00:00 +0000")
+                #expect(persisted.comment == "kurwa comment")
+                #expect(persisted.id == "id-2")
+
+                // when
+                try service.delete(measurement: cm2)
+                // then
+                let deleted = try service.load(measurementId: "id-2")
+                #expect(deleted == nil)
+            }
+
+            @Test("should update single measurement")
+            func shouldUpdateMeasurement() async throws {
+                let tempOutFileURL = ensureEmptyTempFile(filename: "test3.sqlite")
+
+                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+
+                let log = CarbonLog(id: "log-something")
+                try! await service.insert(log: log)
+
+                // given
+                try service.persist(measurement: cm2, forLogId: log.id)
+                let persisted: CarbonMeasurement = try #require(try service
+                    .load(measurementId: "id-2"))
+                #expect(persisted.carbonKg == 42)
+
+                // when
+                let updatedMeasurement = CarbonMeasurement(
+                    kg: 666,
+                    at: cm2.date.addingTimeInterval(86400), // + 1 day
+                    comment: "updated comment",
+                    id: cm2.id
+                )
+                print(tempOutFileURL)
+                try service.persist(measurement: updatedMeasurement, forLogId: log.id)
+                let persistedUpdated = try #require(try service.load(measurementId: "id-2"))
+
+                // then
+                #expect(persistedUpdated.carbonKg == 666)
+                #expect(persistedUpdated.comment == "updated comment")
+            }
+
+            @Test("Should throw error when persisting measurement referring a non existing log")
+            func shouldNotInsertMeasurementWithWrongLogReference() throws {
+                let tempOutFileURL = ensureEmptyTempFile(filename: "test4.sqlite")
+
+                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+
+                // given
+                print(tempOutFileURL.absoluteString)
+                #expect(throws: Error.self) {
+                    try service.persist(measurement: cm2, forLogId: "NOOP")
+                }
+            }
+
+            @Test("Should throw error when appending same measurement twice")
+            func shouldThrowErrorWhenAppendingExisting() async throws {
+                let tempOutFileURL = ensureEmptyTempFile(filename: "test5.sqlite")
+                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+
+                let log = CarbonLog(id: "id-55")
+                try await service.insert(log: log)
+                try await service.append(measurement: cm2, toLogWithId: log.id)
+
+                await #expect(throws: PersistenceError
+                    .inconsistentOperation("Trying to append a measurement which already exists"))
+                {
+                    try await service.append(measurement: cm2, toLogWithId: log.id)
+                }
             }
         }
 
-        @Test("Should throw error when appending same measurement twice")
-        func shouldThrowErrorWhenAppendingExisting() async throws {
-            let tempOutFileURL = ensureEmptyTempFile(filename: "test5.sqlite")
-            let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+        @Suite("Log Tests")
+        struct LogTests {
+            private let cm1 = CarbonMeasurement(
+                by: CarbonEquivalent(type: .carKm, amount: 333),
+                at: date1,
+                id: "id-1"
+            )
+            private let cm2 = CarbonMeasurement(
+                by: CarbonEquivalent(type: .carKm, amount: 333),
+                at: date2,
+                id: "id-2"
+            )
 
-            let log = CarbonLog()
-            try await service.insert(log: log)
-            try await service.append(measurement: cm2, toLogWithId: log.id)
+            @Test
+            func shouldPersistLoadEmptyLog() async throws {
+                let fileUrl = ensureEmptyTempFile(filename: "test-5.sqlite")
+                let service = try SQLitePersistenceService(dbPath: fileUrl)
 
-            await #expect(throws: PersistenceError
-                .inconsistentOperation("Trying to append a measurement which already exists"))
-            {
-                try await service.append(measurement: cm2, toLogWithId: log.id)
+                let log = CarbonLog(id: "my-log")
+                try await service.persist(log: log)
+                let persistedLog = try await service.load(id: log.id)
+
+                #expect(persistedLog != nil)
+            }
+
+            @Test
+            func shouldPersistLoadLogWithMultipleMeasurements() async throws {
+                let fileUrl = ensureEmptyTempFile(filename: "test-6.sqlite")
+
+                let service = try SQLitePersistenceService(dbPath: fileUrl)
+                let log = CarbonLog(with: [cm1, cm2], id: "my-log")
+                try await service.persist(log: log)
+
+                let persistedLog = try #require(await service.load(id: log.id))
+
+                #expect(persistedLog.measurements.count == 2)
             }
         }
     }

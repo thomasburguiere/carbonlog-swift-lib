@@ -2,6 +2,7 @@ import Foundation
 
 protocol LogRepo {
     func create(log: CarbonLog) throws
+    func read(logId: String) throws -> CarbonLog?
     func delete(log: CarbonLog) throws
 }
 
@@ -41,6 +42,21 @@ struct SQLiteLogRepo: LogRepo {
         if status != .Done {
             throw SQLError.SQLiteErrorWithStatus("could not insert log row", status)
         }
+    }
+
+    func read(logId: String) throws -> CarbonLog? {
+        let query = """
+            SELECT \(Col.id) FROM \(tableName);
+        """
+        let statement = try db.prepareStament(statement: query)
+        defer { statement.finalize() }
+
+        statement.bind(text: logId, atPos: 1)
+        let status = statement.executeStep()
+        if status != .Row { return nil }
+
+        let id = statement.getRowTextCell(atPos: 0)
+        return CarbonLog(with: [], id: id)
     }
 
     func delete(log: CarbonLog) throws {

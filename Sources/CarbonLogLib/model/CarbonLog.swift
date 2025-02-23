@@ -3,19 +3,23 @@ import Foundation
 private let cal: Calendar = .init(identifier: .gregorian)
 
 public struct CarbonLog: Codable, Sendable {
-    public let measurements: [CarbonMeasurement]
+    public var measurements: [CarbonMeasurement]
     public let id: String
 
-    public init() {
-        self.init(with: [])
+    public init(id: String) {
+        self.init(with: [], id: id)
     }
 
-    public init(with measurements: [CarbonMeasurement]) {
+    public init(with measurements: [CarbonMeasurement], id: String) {
         self.measurements = measurements
-        id = UUID().uuidString
+        self.id = id
     }
 
-    public func getRangeCarbonKgs(from: Date, to: Date = Date(), inclusive: Bool = false) -> Double {
+    public func getRangeCarbonKgs(
+        from: Date,
+        to: Date = Date(),
+        inclusive: Bool = false
+    ) -> Double {
         let filter: (CarbonMeasurement) -> Bool
         if !inclusive {
             filter = { (cm: CarbonMeasurement) -> Bool in
@@ -45,6 +49,6 @@ public struct CarbonLog: Codable, Sendable {
     }
 
     public func add(measurements: [CarbonMeasurement]) -> CarbonLog {
-        return CarbonLog(with: self.measurements + measurements)
+        return CarbonLog(with: self.measurements + measurements, id: id)
     }
 }

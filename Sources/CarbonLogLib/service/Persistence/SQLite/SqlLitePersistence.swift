@@ -23,27 +23,38 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         logRepo = try SQLiteLogRepo(db: db)
     }
 
-    public func persist(log _: CarbonLog) async throws {}
+    public func persist(log: CarbonLog) async throws {
+        if try logRepo.read(logId: log.id) == nil {
+            try logRepo.create(log: log)
+            try log.measurements.forEach { measurement in
+                try measurementRepo.create(measurement: measurement, forLogId: log.id)
+            }
+        } else {}
+    }
 
     func insert(log: CarbonLog) async throws {
         try logRepo.create(log: log)
     }
 
-    public func load(id _: String) async -> CarbonLog? {
-        return nil
+    public func load(id: String) async throws -> CarbonLog? {
+        guard let log = try logRepo.read(logId: id) else { return nil }
+
+        let logMeasurements = try measurementRepo.readMany(forLogId: id)
+        let updated = log.add(measurements: logMeasurements)
+        return updated
     }
 
     public func append(measurement: CarbonMeasurement, toLogWithId logId: LogId) async throws {
         let exists = try measurementRepo.read(measurementId: measurement.id) != nil
         guard exists == false else {
-            throw PersistenceError.inconsistentOperation("Trying to append a measurement which already exists")
+            throw PersistenceError
+                .inconsistentOperation("Trying to append a measurement which already exists")
         }
         try measurementRepo.create(measurement: measurement, forLogId: logId)
     }
 
     func persist(measurement: CarbonMeasurement, forLogId logId: LogId) throws {
-        let exists = try measurementRepo.read(measurementId: measurement.id) != nil
-        if exists {
+        if try measurementRepo.read(measurementId: measurement.id) != nil {
             try measurementRepo.update(measurement: measurement)
         } else {
             try measurementRepo.create(measurement: measurement, forLogId: logId)

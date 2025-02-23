@@ -4,6 +4,7 @@ public typealias LogId = String
 public protocol MeasurementRepo {
     func create(measurement: CarbonMeasurement, forLogId: String) throws
     func read(measurementId: String) throws -> CarbonMeasurement?
+    func readMany(forLogId: String) throws -> [CarbonMeasurement]
     func delete(measurement: CarbonMeasurement) throws
     func update(measurement: CarbonMeasurement) throws
 }
@@ -14,25 +15,49 @@ struct CarbonMeasurementEntity {
 }
 
 private let tableName: String = "CarbonMeasurement"
-private enum Col: String {
+private enum EntityCol: String, CaseIterable {
     case id
-    case carbonKg
     case date
+    case carbonKg
     case comment
+    static var forSelect: String {
+        allCases.reduce("") {
+            if $0 != "" { return $0 + "," + $1.rawValue } else { return $1.rawValue }
+        }
+    }
+}
+
+private enum OtherCol: String {
     case logId
+}
+
+private extension SQLiteStatement {
+    func extractMeasurement() throws -> CarbonMeasurement {
+        let formatter = ISO8601DateFormatter()
+        let id: String? = getRowTextCell(atPos: 0)
+        let date: Date? = formatter.date(from: getRowTextCell(atPos: 1))
+        let carbonKg: Double? = getRowDoubleCell(atPos: 2)
+        let comment: String? = getRowTextCell(atPos: 3)
+
+        guard let date, let carbonKg, let id else {
+            throw SQLError.InconsistentRow
+        }
+        return CarbonMeasurement(kg: carbonKg, at: date, comment: comment, id: id)
+    }
 }
 
 private let createTableString: String = """
   CREATE TABLE "\(tableName)" (
-    "\(Col.id)"        TEXT NOT NULL UNIQUE,
-    "\(Col.carbonKg)"  NUMERIC NOT NULL,
-    "\(Col.date)"	    TEXT NOT NULL,
-    "\(Col.comment)"	TEXT,
-    "\(Col.logId)"	    TEXT NOT NULL,
-    PRIMARY KEY(\(Col.id)),
-    FOREIGN KEY(\(Col.logId)) REFERENCES "CarbonLog"("id")
+    "\(EntityCol.id)"        TEXT NOT NULL UNIQUE,
+    "\(EntityCol.carbonKg)"  NUMERIC NOT NULL,
+    "\(EntityCol.date)"	    TEXT NOT NULL,
+    "\(EntityCol.comment)"	TEXT,
+    "\(OtherCol.logId)"	    TEXT NOT NULL,
+    PRIMARY KEY(\(EntityCol.id)),
+    FOREIGN KEY(\(OtherCol.logId)) REFERENCES "CarbonLog"("id")
   );
 """
+
 struct SQLiteMeasurementRepo: MeasurementRepo {
     let db: SQLiteDB
     let formatter = ISO8601DateFormatter()
@@ -43,54 +68,65 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
     }
 
     func read(measurementId id: String) throws -> CarbonMeasurement? {
-        let selectStatementString = """
-          SELECT \(Col.date), \(Col.carbonKg), \(Col.comment)
+        let query = """
+          SELECT \(EntityCol.forSelect)
           FROM \(tableName)
-          WHERE \(Col.id) = ?;
+          WHERE \(EntityCol.id) = ?;
         """
-        let selectStatement: SQLiteStatement = try db.prepareStament(statement: selectStatementString)
-        defer { selectStatement.finalize() }
+        let statement: SQLiteStatement = try db.prepareStament(statement: query)
+        defer { statement.finalize() }
 
-        selectStatement.bind(text: id, atPos: 1)
-        guard selectStatement.executeStep() == .Row else { return nil }
+        statement.bind(text: id, atPos: 1)
+        guard statement.executeStep() == .Row else { return nil }
 
-        let date: Date? = formatter.date(from: selectStatement.getRowTextCell(atPos: 0))
-        let carbonKg: Double? = selectStatement.getRowDoubleCell(atPos: 1)
-        let comment: String? = selectStatement.getRowTextCell(atPos: 2)
+        return try statement.extractMeasurement()
+    }
 
-        guard let date, let carbonKg else {
-            throw SQLError.InconsistentRow
+    func readMany(forLogId logId: String) throws -> [CarbonMeasurement] {
+        let query = """
+          SELECT \(EntityCol.forSelect)
+          FROM \(tableName)
+          WHERE \(OtherCol.logId) = ?;
+        """
+        let statement: SQLiteStatement = try db.prepareStament(statement: query)
+        defer { statement.finalize() }
+
+        statement.bind(text: logId, atPos: 1)
+
+        var arr: [CarbonMeasurement] = []
+        while statement.executeStep() == .Row {
+            let measurment = try statement.extractMeasurement()
+            arr.append(measurment)
         }
-
-        return CarbonMeasurement(kg: carbonKg, at: date, comment: comment)
+        return arr
     }
 
     func create(measurement: CarbonMeasurement, forLogId logId: String) throws {
-        let insertStatementString = """
+        let query = """
             INSERT INTO \(tableName) (
-            \(Col.id),
-            \(Col.carbonKg),
-            \(Col.date),
-            \(Col.logId),
-            \(Col.comment))
+            \(EntityCol.id),
+            \(EntityCol.carbonKg),
+            \(EntityCol.date),
+            \(OtherCol.logId),
+            \(EntityCol.comment))
             VALUES (?, ?, ?, ?, ?);
         """
-        let insertStatement: SQLiteStatement = try db.prepareStament(statement: insertStatementString)
-        defer { insertStatement.finalize() }
+        let statement: SQLiteStatement = try db.prepareStament(statement: query)
+        defer { statement.finalize() }
 
         let id = measurement.id
         let carbonKg = measurement.carbonKg
         let dateString = formatter.string(from: measurement.date)
 
-        insertStatement.bind(text: id, atPos: 1)
-        insertStatement.bind(double: carbonKg, atPos: 2)
-        insertStatement.bind(text: dateString, atPos: 3)
-        insertStatement.bind(text: logId, atPos: 4)
+        statement.bind(text: id, atPos: 1)
+        statement.bind(double: carbonKg, atPos: 2)
+        statement.bind(text: dateString, atPos: 3)
+        statement.bind(text: logId, atPos: 4)
         if let comment = measurement.comment {
-            insertStatement.bind(text: comment, atPos: 5)
+            statement.bind(text: comment, atPos: 5)
         }
 
-        let status = insertStatement.executeStep()
+        let status = statement.executeStep()
         if status != .Done {
             throw SQLError.SQLiteErrorWithStatus("Could not insert row", status)
         }
@@ -100,10 +136,10 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         let query = """
             UPDATE \(tableName)
             SET
-                 \(Col.carbonKg) = ?,
-                 \(Col.date)     = ?,
-                 \(Col.comment)  = ?
-            WHERE \(Col.id) = ?
+                 \(EntityCol.carbonKg) = ?,
+                 \(EntityCol.date)     = ?,
+                 \(EntityCol.comment)  = ?
+            WHERE \(EntityCol.id) = ?
         """
         let statement = try db.prepareStament(statement: query)
         defer { statement.finalize() }
