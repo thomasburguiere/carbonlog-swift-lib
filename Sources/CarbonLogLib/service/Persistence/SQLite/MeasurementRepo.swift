@@ -82,6 +82,40 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         return try statement.extractMeasurement()
     }
 
+    func readMany(ids: [String], forLogId logId: String) throws -> [CarbonMeasurement] {
+        let inClause = ids.map { _ in "?" }
+            .reduce("") { acc, next in
+                if acc == "" {
+                    return next
+                } else {
+                    return acc + "," + next
+                }
+            }
+
+        let query = """
+          SELECT \(EntityCol.forSelect)
+          FROM \(tableName)
+          WHERE \(EntityCol.id) IN (\(inClause)) AND \(OtherCol.logId) = ?;
+        """
+        let statement: SQLiteStatement = try db.prepareStament(statement: query)
+        defer { statement.finalize() }
+
+        var posIndex: Int32 = 1
+        for id in ids {
+            statement.bind(text: id, atPos: posIndex)
+            posIndex += 1
+        }
+
+        statement.bind(text: logId, atPos: posIndex)
+
+        var arr: [CarbonMeasurement] = []
+
+        while statement.executeStep() == .Row {
+            try arr.append(statement.extractMeasurement())
+        }
+        return arr
+    }
+
     func readMany(forLogId logId: String) throws -> [CarbonMeasurement] {
         let query = """
           SELECT \(EntityCol.forSelect)
@@ -95,8 +129,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
 
         var arr: [CarbonMeasurement] = []
         while statement.executeStep() == .Row {
-            let measurment = try statement.extractMeasurement()
-            arr.append(measurment)
+            try arr.append(statement.extractMeasurement())
         }
         return arr
     }

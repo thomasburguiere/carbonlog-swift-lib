@@ -11,14 +11,6 @@ private let date2 =
     calendar
         .date(from: DateComponents(timeZone: gmt, year: 2022, month: 1, day: 2, hour: 12))!
 
-func ensureEmptyTempFile(filename: String) -> URL {
-    let tempFolderURL = FileManager.default.temporaryDirectory
-    let tempOutFileURL = tempFolderURL.appending(component: filename)
-
-    do { try FileManager.default.removeItem(at: tempOutFileURL) } catch {}
-    return tempOutFileURL
-}
-
 @Suite("SQLite Persistence")
 struct SqlitePersistenceTests {
     @Suite("SQLiteDB")

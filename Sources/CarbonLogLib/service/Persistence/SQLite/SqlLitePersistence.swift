@@ -29,7 +29,11 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
             try log.measurements.forEach { measurement in
                 try measurementRepo.create(measurement: measurement, forLogId: log.id)
             }
-        } else {}
+        } else {
+            try log.measurements.forEach { measurement in
+                try persist(measurement: measurement, forLogId: log.id)
+            }
+        }
     }
 
     func insert(log: CarbonLog) async throws {
