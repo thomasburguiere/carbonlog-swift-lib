@@ -35,7 +35,7 @@ struct MeasurementRepoTests {
 
     @Test
     func shouldReadAllLogMeasurements() async throws {
-        let tempOutFileURL = ensureEmptyTempFile(filename: "test-readall-meas.sqlite")
+        let tempOutFileURL = ensureEmptyTempFile(filename: "test-readall-measurements.sqlite")
         let db = try SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
         let repo = try SQLiteMeasurementRepo(db: db)
         let logRepo = try SQLiteLogRepo(db: db)
@@ -50,27 +50,5 @@ struct MeasurementRepoTests {
         let result = try repo.readMany(forLogId: "logId")
         // then
         #expect(result.count == 3)
-    }
-
-    @Test
-    func shouldReadLogMeasurementsFilteredByIds() async throws {
-        let tempOutFileURL = ensureEmptyTempFile(filename: "test-readmany-meas.sqlite")
-        let db = try SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
-        let repo = try SQLiteMeasurementRepo(db: db)
-        let logRepo = try SQLiteLogRepo(db: db)
-
-        // given
-        try logRepo.create(log: log)
-        try repo.create(measurement: cm1, forLogId: "logId")
-        try repo.create(measurement: cm2, forLogId: "logId")
-        try repo.create(measurement: cm3, forLogId: "logId")
-
-        // when
-        let result = try repo.readMany(
-            ids: ["id-1", "id-2"],
-            forLogId: "logId"
-        )
-        // then
-        #expect(result.count == 2)
     }
 }

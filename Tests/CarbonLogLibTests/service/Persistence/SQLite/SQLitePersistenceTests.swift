@@ -165,29 +165,75 @@ struct SqlitePersistenceTests {
                 id: "id-2"
             )
 
-            @Test
+            @Test("Should persist and load empty log")
             func shouldPersistLoadEmptyLog() async throws {
                 let fileUrl = ensureEmptyTempFile(filename: "test-5.sqlite")
                 let service = try SQLitePersistenceService(dbPath: fileUrl)
 
                 let log = CarbonLog(id: "my-log")
+                // when
                 try await service.persist(log: log)
                 let persistedLog = try await service.load(id: log.id)
 
+                // then
                 #expect(persistedLog != nil)
             }
 
-            @Test
+            @Test("Should persist and load log with multiple measurements")
             func shouldPersistLoadLogWithMultipleMeasurements() async throws {
                 let fileUrl = ensureEmptyTempFile(filename: "test-6.sqlite")
+                let service = try SQLitePersistenceService(dbPath: fileUrl)
+                let log = CarbonLog(with: [cm1, cm2], id: "my-log")
 
+                // when
+                try await service.persist(log: log)
+                let persistedLog = try #require(await service.load(id: log.id))
+
+                // then
+                #expect(persistedLog.measurements.count == 2)
+            }
+
+            @Test("Should persist and load log with multiple measurements")
+            func shouldUpdateLogWithMultipleMeasurements() async throws {
+                let fileUrl =
+                    ensureEmptyTempFile(filename: "test-update-multuple-measurements.sqlite")
                 let service = try SQLitePersistenceService(dbPath: fileUrl)
                 let log = CarbonLog(with: [cm1, cm2], id: "my-log")
                 try await service.persist(log: log)
-
-                let persistedLog = try #require(await service.load(id: log.id))
-
+                var persistedLog = try #require(await service.load(id: log.id))
                 #expect(persistedLog.measurements.count == 2)
+
+                // when
+                let cm2Updated = CarbonMeasurement(
+                    kg: 1983,
+                    at: cm2.date,
+                    comment: "cm2 updated",
+                    id: cm2.id
+                )
+                let newCm = CarbonMeasurement(
+                    kg: 10000,
+                    at: cm2.date,
+                    comment: "new cm",
+                    id: "newCmId"
+                )
+                let logUpdated = CarbonLog(with: [cm2Updated, newCm], id: log.id)
+                try await service.persist(log: logUpdated)
+
+                // then
+                persistedLog = try #require(await service.load(id: log.id))
+                #expect(persistedLog.measurements.count == 2)
+
+                let cm2UpdatedInDb = persistedLog.measurements
+                    .first { $0.id == cm2.id }
+                #expect(cm2UpdatedInDb!.comment == "cm2 updated")
+                #expect(cm2UpdatedInDb!.carbonKg == 1983)
+                #expect(cm2UpdatedInDb!.date == cm2.date)
+
+                let newCmInDb = persistedLog.measurements
+                    .first { $0.id == "newCmId" }
+                #expect(newCmInDb!.comment == "new cm")
+                #expect(newCmInDb!.carbonKg == 10000)
+                #expect(newCmInDb!.date == cm2.date)
             }
         }
     }

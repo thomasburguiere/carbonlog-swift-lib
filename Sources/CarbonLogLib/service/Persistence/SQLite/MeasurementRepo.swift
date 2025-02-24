@@ -5,8 +5,9 @@ public protocol MeasurementRepo {
     func create(measurement: CarbonMeasurement, forLogId: String) throws
     func read(measurementId: String) throws -> CarbonMeasurement?
     func readMany(forLogId: String) throws -> [CarbonMeasurement]
-    func delete(measurement: CarbonMeasurement) throws
     func update(measurement: CarbonMeasurement) throws
+    func delete(measurement: CarbonMeasurement) throws
+    func delete(forLogId logId: String) throws
 }
 
 struct CarbonMeasurementEntity {
@@ -80,40 +81,6 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         guard statement.executeStep() == .Row else { return nil }
 
         return try statement.extractMeasurement()
-    }
-
-    func readMany(ids: [String], forLogId logId: String) throws -> [CarbonMeasurement] {
-        let inClause = ids.map { _ in "?" }
-            .reduce("") { acc, next in
-                if acc == "" {
-                    return next
-                } else {
-                    return acc + "," + next
-                }
-            }
-
-        let query = """
-          SELECT \(EntityCol.forSelect)
-          FROM \(tableName)
-          WHERE \(EntityCol.id) IN (\(inClause)) AND \(OtherCol.logId) = ?;
-        """
-        let statement: SQLiteStatement = try db.prepareStament(statement: query)
-        defer { statement.finalize() }
-
-        var posIndex: Int32 = 1
-        for id in ids {
-            statement.bind(text: id, atPos: posIndex)
-            posIndex += 1
-        }
-
-        statement.bind(text: logId, atPos: posIndex)
-
-        var arr: [CarbonMeasurement] = []
-
-        while statement.executeStep() == .Row {
-            try arr.append(statement.extractMeasurement())
-        }
-        return arr
     }
 
     func readMany(forLogId logId: String) throws -> [CarbonMeasurement] {
@@ -196,12 +163,22 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
     }
 
     func delete(measurement: CarbonMeasurement) throws {
-        let deleteString = "DELETE from \(tableName) WHERE id = ?"
-        let statement = try db.prepareStament(statement: deleteString)
+        let query = "DELETE from \(tableName) WHERE id = ?"
+        let statement = try db.prepareStament(statement: query)
         defer { statement.finalize() }
 
         statement.bind(text: measurement.id, atPos: 1)
         let status = statement.executeStep()
         if status != .Done { throw SQLError.SQLiteErrorWithStatus("Could not delete row", status) }
+    }
+
+    func delete(forLogId logId: String) throws {
+        let query = "DELETE FROM \(tableName) WHERE \(OtherCol.logId) = ?"
+        let statement = try db.prepareStament(statement: query)
+        defer { statement.finalize() }
+
+        statement.bind(text: logId, atPos: 1)
+        let status = statement.executeStep()
+        if status != .Done { throw SQLError.SQLiteErrorWithStatus("Could not delete rows", status) }
     }
 }

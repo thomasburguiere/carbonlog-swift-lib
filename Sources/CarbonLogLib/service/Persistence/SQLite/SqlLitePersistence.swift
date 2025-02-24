@@ -26,13 +26,11 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     public func persist(log: CarbonLog) async throws {
         if try logRepo.read(logId: log.id) == nil {
             try logRepo.create(log: log)
-            try log.measurements.forEach { measurement in
-                try measurementRepo.create(measurement: measurement, forLogId: log.id)
-            }
         } else {
-            try log.measurements.forEach { measurement in
-                try persist(measurement: measurement, forLogId: log.id)
-            }
+            try measurementRepo.delete(forLogId: log.id)
+        }
+        try log.measurements.forEach { measurement in
+            try measurementRepo.create(measurement: measurement, forLogId: log.id)
         }
     }
 
