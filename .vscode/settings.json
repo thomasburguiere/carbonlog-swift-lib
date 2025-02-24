@@ -4,5 +4,10 @@
     "DEVELOPER_DIR": "/Applications/Xcode.app"
   },
   "swiftformat.enable": true,
-  "swiftformat.options": ["--indent", "4"],
+  "swiftformat.options": [
+    "--indent", "4",
+    "--maxwidth", "100",
+    "--funcattributes", "prev-line",
+    "--stripunusedargs", "always",
+  ],
 }
