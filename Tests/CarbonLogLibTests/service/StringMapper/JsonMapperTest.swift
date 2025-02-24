@@ -24,7 +24,7 @@ struct JsonExtensionsTest {
 
     @Test("should dump log with single measurement to JSON")
     func dumpLogSingleMeasurementsJson() async throws {
-        let log = CarbonLog(with: [cm2])
+        let log = CarbonLog(with: [cm2], id: "jsonLog")
         let jsonString = mapper.logToString(log: log)
 
         #expect(jsonString?.contains(#""date":"2022-01-02T12:00:00Z""#) == true)
@@ -34,7 +34,7 @@ struct JsonExtensionsTest {
 
     @Test("should dump log with single measurement with comment to JSON")
     func dumpLogSingleMeasurementsAndCommentsJson() async throws {
-        let log = CarbonLog(with: [cm3])
+        let log = CarbonLog(with: [cm3], id: "jsonLog")
         let jsonString = mapper.logToString(log: log)
 
         #expect(jsonString?.contains(#""date":"2022-01-03T12:00:00Z""#) == true)
@@ -45,7 +45,7 @@ struct JsonExtensionsTest {
 
     @Test("should dump log with multiple measurements to JSON")
     func dumpLogMultiMeasurementsJson() async throws {
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "jsonLog")
         let jsonString = mapper.logToString(log: log)
 
         #expect(jsonString?.contains(#""date":"2022-01-02T12:00:00Z""#) == true)

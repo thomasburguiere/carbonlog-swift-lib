@@ -17,7 +17,8 @@ private let date3 =
 func getInputFileCopyURL(fileName: String) -> URL {
     let inputUrl = Bundle.module.url(forResource: fileName, withExtension: "csv")!
     let outputURL =
-        FileManager.default.temporaryDirectory.appending(path: fileName.appending(UUID().uuidString))
+        FileManager.default.temporaryDirectory
+            .appending(path: fileName.appending(UUID().uuidString))
 
     try! FileManager.default.copyItem(at: inputUrl, to: outputURL)
     return outputURL
@@ -35,12 +36,12 @@ struct SingleCSVPersistenceTests {
         let tempFolderURL = FileManager.default.temporaryDirectory
         let tempOutFileURL = tempFolderURL.appending(component: "test.csv")
 
-        let log = CarbonLog(with: [cm2, cm3])
-        var service = LocalFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
+        let log = CarbonLog(with: [cm2, cm3], id: "myLog")
+        var service = LocalStringFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
 
         // when
         try await service.persist(log: log)
-        service = LocalFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
+        service = LocalStringFilePersistenceService(fileURL: tempOutFileURL, format: .CSV)
         let loadedLog = try #require(await service.load(id: "noop"))
 
         // then
@@ -50,7 +51,10 @@ struct SingleCSVPersistenceTests {
     @Test("Should persist updates to CarbonLog")
     func persistUpdateToLogLog() async throws {
         // given
-        let service = LocalFilePersistenceService(fileURL: getInputFileCopyURL(fileName: "test-input"), format: .CSV)
+        let service = LocalStringFilePersistenceService(
+            fileURL: getInputFileCopyURL(fileName: "test-input"),
+            format: .CSV
+        )
         let initialLog = try #require(await service.load(id: "noop"))
         #expect(initialLog.measurements.count == 2)
 
@@ -76,7 +80,10 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should load CarbonLog from CSV")
     func loadCsvLog() async throws {
-        let service = LocalFilePersistenceService(fileURL: getInputFileCopyURL(fileName: "test-input"), format: .CSV)
+        let service = LocalStringFilePersistenceService(
+            fileURL: getInputFileCopyURL(fileName: "test-input"),
+            format: .CSV
+        )
         let loadedLog = try #require(await service.load(id: "noop"))
 
         // then
@@ -85,7 +92,10 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should return nil when loading empty CSV")
     func handleEmptyCsv() async throws {
-        let service = LocalFilePersistenceService(fileURL: getInputFileCopyURL(fileName: "test-empty"), format: .CSV)
+        let service = LocalStringFilePersistenceService(
+            fileURL: getInputFileCopyURL(fileName: "test-empty"),
+            format: .CSV
+        )
         let loadedLog = await service.load(id: "noop")
 
         #expect(loadedLog == nil)
@@ -93,7 +103,10 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should return nil when loading garbage CSV")
     func handleGarbageCsv() async throws {
-        let service = LocalFilePersistenceService(fileURL: getInputFileCopyURL(fileName: "test-garbage"), format: .CSV)
+        let service = LocalStringFilePersistenceService(
+            fileURL: getInputFileCopyURL(fileName: "test-garbage"),
+            format: .CSV
+        )
         let loadedLog = await service.load(id: "noop")
 
         #expect(loadedLog == nil)
@@ -101,7 +114,7 @@ struct SingleCSVPersistenceTests {
 
     @Test("Should handle CSV with mixed valid invalid content")
     func handleMixedGarbageCsv() async throws {
-        let service = LocalFilePersistenceService(
+        let service = LocalStringFilePersistenceService(
             fileURL: getInputFileCopyURL(fileName: "test-mixed-input"),
             format: .CSV
         )

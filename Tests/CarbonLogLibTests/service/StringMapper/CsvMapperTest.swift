@@ -73,9 +73,10 @@ struct CsvExtensions {
         #expect(cm.comment == "comment")
     }
 
-    @Test("should dump CarbonLog to CSV") func dumpLogCsvString() throws {
+    @Test("should dump CarbonLog to CSV")
+    func dumpLogCsvString() throws {
         // given
-        let log = CarbonLog(with: [cm2, cm3])
+        let log = CarbonLog(with: [cm2, cm3], id: "my-log")
 
         // when
         let result = log.csvString

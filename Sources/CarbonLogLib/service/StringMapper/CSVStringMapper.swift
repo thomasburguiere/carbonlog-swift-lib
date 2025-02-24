@@ -61,7 +61,7 @@ extension CarbonLog {
         let measurements = lines.compactMap { try? CarbonMeasurement(csvString: String($0)) }
         if measurements.count == 0 { return nil }
 
-        return CarbonLog(with: measurements)
+        return CarbonLog(with: measurements, id: "NOOP")
     }
 
     var csvString: String {
