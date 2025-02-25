@@ -57,13 +57,9 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
     let db: SQLiteDB
     let formatter = ISO8601DateFormatter()
 
-    init(db: SQLiteDB) throws {
-        self.db = db
-        try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
-    }
-
     init(dbPath: URL) throws {
         db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
+        try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
     }
 
     func read(measurementId id: MeasurementId) throws -> CarbonMeasurement? {

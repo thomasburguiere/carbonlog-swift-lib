@@ -36,9 +36,8 @@ struct MeasurementRepoTests {
     @Test
     func shouldReadAllLogMeasurements() async throws {
         let tempOutFileURL = ensureEmptyTempFile(filename: "test-readall-measurements.sqlite")
-        let db = try SQLiteDB.fromPath(filepath: tempOutFileURL.absoluteString)
-        let repo = try SQLiteMeasurementRepo(db: db)
-        let logRepo = try SQLiteLogRepo(db: db)
+        let repo = try SQLiteMeasurementRepo(dbPath: tempOutFileURL)
+        let logRepo = try SQLiteLogRepo(dbPath: tempOutFileURL)
 
         // given
         try logRepo.create(log: log)

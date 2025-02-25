@@ -21,9 +21,8 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
     let logRepo: LogRepo
 
     init(dbPath: URL) throws {
-        let db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
-        measurementRepo = try SQLiteMeasurementRepo(db: db)
-        logRepo = try SQLiteLogRepo(db: db)
+        logRepo = try SQLiteLogRepo(dbPath: dbPath)
+        measurementRepo = try SQLiteMeasurementRepo(dbPath: dbPath)
     }
 
     public func persist(log: CarbonLog) async throws {
