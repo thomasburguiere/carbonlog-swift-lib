@@ -1,13 +1,12 @@
 import Foundation
 
-public typealias LogId = String
-public protocol MeasurementRepo {
-    func create(measurement: CarbonMeasurement, forLogId: String) throws
-    func read(measurementId: String) throws -> CarbonMeasurement?
-    func readMany(forLogId: String) throws -> [CarbonMeasurement]
+protocol MeasurementRepo {
+    func create(measurement: CarbonMeasurement, forLogId: LogId) throws
+    func read(measurementId: MeasurementId) throws -> CarbonMeasurement?
+    func readMany(forLogId: LogId) throws -> [CarbonMeasurement]
     func update(measurement: CarbonMeasurement) throws
     func delete(measurement: CarbonMeasurement) throws
-    func delete(forLogId logId: String) throws
+    func delete(forLogId: LogId) throws
 }
 
 private let tableName: String = "CarbonMeasurement"
@@ -67,7 +66,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
     }
 
-    func read(measurementId id: String) throws -> CarbonMeasurement? {
+    func read(measurementId id: MeasurementId) throws -> CarbonMeasurement? {
         let query = """
           SELECT \(EntityCol.forSelect)
           FROM \(tableName)
@@ -82,7 +81,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         return try statement.extractMeasurement()
     }
 
-    func readMany(forLogId logId: String) throws -> [CarbonMeasurement] {
+    func readMany(forLogId logId: LogId) throws -> [CarbonMeasurement] {
         let query = """
           SELECT \(EntityCol.forSelect)
           FROM \(tableName)
@@ -100,7 +99,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         return arr
     }
 
-    func create(measurement: CarbonMeasurement, forLogId logId: String) throws {
+    func create(measurement: CarbonMeasurement, forLogId logId: LogId) throws {
         let query = """
             INSERT INTO \(tableName) (
             \(EntityCol.id),
@@ -171,7 +170,7 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
         if status != .Done { throw SQLError.SQLiteErrorWithStatus("Could not delete row", status) }
     }
 
-    func delete(forLogId logId: String) throws {
+    func delete(forLogId logId: LogId) throws {
         let query = "DELETE FROM \(tableName) WHERE \(OtherCol.logId) = ?"
         let statement = try db.prepareStament(statement: query)
         defer { statement.finalize() }
