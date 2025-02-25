@@ -1,11 +1,14 @@
 import Foundation
 
-public enum SQLError: Error, Equatable {
+enum SQLError: Error, Equatable {
     case CouldNotPrepareStatement
     case CannotOpenDb(String)
     case DuplicateTable(String)
     case SQLiteErrorWithStatus(String, SQLiteStatus)
 }
+
+public typealias LogId = String
+public typealias MeasurementId = String
 
 public enum PersistenceError: Error, Equatable {
     case InconsistentContent

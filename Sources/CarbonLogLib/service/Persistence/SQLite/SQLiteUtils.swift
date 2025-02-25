@@ -5,7 +5,7 @@ private extension String {
     var sqliteString: UnsafePointer<CChar>? { (self as NSString).utf8String }
 }
 
-public enum SQLiteStatus: Sendable, Equatable {
+enum SQLiteStatus: Sendable, Equatable {
     case Done
     case Row
     case GeneralError
@@ -65,11 +65,6 @@ struct SQLiteDB {
         do { try enableFkSupport() } catch {}
     }
 
-    private func enableFkSupport() throws {
-        let query = "PRAGMA foreign_keys = ON;"
-        try executeStatement(statement: query)
-    }
-
     func createTable(_ tableName: String, withCreateQuery query: String) throws {
         if try tableExists(tableName: tableName) { throw SQLError.DuplicateTable(tableName) }
 
@@ -84,22 +79,23 @@ struct SQLiteDB {
     }
 
     func tableExists(tableName: String) throws -> Bool {
-        let statementString =
-            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
+        let query =
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name= ?;"
 
-        let tableExistsStatement: SQLiteStatement = try! prepareStament(statement: statementString)
-        defer { tableExistsStatement.finalize() }
+        let statement: SQLiteStatement = try! prepareStament(statement: query)
+        defer { statement.finalize() }
 
-        tableExistsStatement.bind(text: tableName, atPos: 1)
-        let execResult = tableExistsStatement.executeStep()
-        guard execResult == .Done || execResult == .Row else {
+        statement.bind(text: tableName, atPos: 1)
+
+        let status = statement.executeStep()
+        guard status == .Done || status == .Row else {
             throw SQLError.SQLiteErrorWithStatus(
                 "Coulnt check if table \(tableName) exists",
-                execResult
+                status
             )
         }
 
-        let count = tableExistsStatement.getRowIntCell(atPos: 0)
+        let count = statement.getRowIntCell(atPos: 0)
 
         return count > 0
     }
@@ -118,22 +114,29 @@ struct SQLiteDB {
         return SQLiteStatement(backingPointer: statementPointer)
     }
 
-    func executeStatement(statement: String) throws {
-        let statementPointer: SQLiteStatement = try prepareStament(statement: statement)
-        defer { statementPointer.finalize() }
-
-        let executeReturnCode = statementPointer.executeStep()
-        guard executeReturnCode == .Done else { throw SQLError.SQLiteErrorWithStatus(
-            "Could not execute statement: \(statement)",
-            executeReturnCode
-        ) }
-    }
-
     static func fromPath(filepath: String) throws -> SQLiteDB {
         var db: OpaquePointer?
         guard sqlite3_open(filepath, &db) == SQLITE_OK else {
             throw SQLError.CannotOpenDb(filepath)
         }
         return SQLiteDB(dbPointer: db!)
+    }
+
+    private func executeStatement(statement: String) throws {
+        let statementPointer: SQLiteStatement = try prepareStament(statement: statement)
+        defer { statementPointer.finalize() }
+
+        let executeReturnCode = statementPointer.executeStep()
+        guard executeReturnCode == .Done else {
+            throw SQLError.SQLiteErrorWithStatus(
+                "Could not execute statement: \(statement)",
+                executeReturnCode
+            )
+        }
+    }
+
+    private func enableFkSupport() throws {
+        let query = "PRAGMA foreign_keys = ON;"
+        try executeStatement(statement: query)
     }
 }

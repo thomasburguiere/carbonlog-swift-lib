@@ -2,7 +2,7 @@ import Foundation
 
 protocol LogRepo {
     func create(log: CarbonLog) throws
-    func read(logId: String) throws -> CarbonLog?
+    func read(logId: LogId) throws -> CarbonLog?
     func delete(log: CarbonLog) throws
 }
 
@@ -48,7 +48,7 @@ struct SQLiteLogRepo: LogRepo {
         }
     }
 
-    func read(logId: String) throws -> CarbonLog? {
+    func read(logId: LogId) throws -> CarbonLog? {
         let query = """
             SELECT \(Col.id) FROM \(tableName);
         """

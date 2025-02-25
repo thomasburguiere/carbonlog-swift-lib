@@ -14,7 +14,7 @@ private let date3 =
     calendar
         .date(from: DateComponents(timeZone: gmt, year: 2022, month: 1, day: 3, hour: 12))!
 
-func getInputFileCopyURL(fileName: String) -> URL {
+private func getInputFileCopyURL(fileName: String) -> URL {
     let inputUrl = Bundle.module.url(forResource: fileName, withExtension: "csv")!
     let outputURL =
         FileManager.default.temporaryDirectory
