@@ -15,14 +15,14 @@ public enum PersistenceError: Error, Equatable {
     case inconsistentOperation(String? = nil)
 }
 
-public struct SQLitePersistenceService: CarbonLogPersistenceService {
+public struct SQLPersistenceService: CarbonLogPersistenceService {
     let formatter = ISO8601DateFormatter()
     let measurementRepo: MeasurementRepo
     let logRepo: LogRepo
 
-    init(dbPath: URL) throws {
-        logRepo = try SQLiteLogRepo(dbPath: dbPath)
-        measurementRepo = try SQLiteMeasurementRepo(dbPath: dbPath)
+    init(logRepo: LogRepo, measurementRepo: MeasurementRepo) {
+        self.logRepo = logRepo
+        self.measurementRepo = measurementRepo
     }
 
     public func persist(log: CarbonLog) async throws {
