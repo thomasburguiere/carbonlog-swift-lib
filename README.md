@@ -15,8 +15,8 @@ open .build/plugins/Swift-DocC/outputs/CarbonLogLib.doccarchive
 
 ### Install tools
 ```shell
-$ brew install swiftformat
-$ npm install --global git-format-staged
+brew install swiftformat
+npm install --global git-format-staged
 ```
 ### git `pre-commit` hook
 
