@@ -70,7 +70,10 @@ struct SqlitePersistenceTests {
             func shouldInsertLoadAndDeleteMeasurment() async throws {
                 let tempOutFileURL = ensureEmptyTempFile(filename: "test2.sqlite")
 
-                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+                let service = try! SQLPersistenceService(
+                    logRepo: SQLiteLogRepo(dbPath: tempOutFileURL),
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: tempOutFileURL)
+                )
 
                 let log = CarbonLog(id: "another-log")
                 try! await service.persist(log: log)
@@ -96,8 +99,11 @@ struct SqlitePersistenceTests {
                 let tempOutFileURL =
                     ensureEmptyTempFile(filename: "test-updated-measurement.sqlite")
 
-                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
                 let logRepo = try! SQLiteLogRepo(dbPath: tempOutFileURL)
+                let service = try! SQLPersistenceService(
+                    logRepo: logRepo,
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: tempOutFileURL)
+                )
 
                 let log = CarbonLog(id: "log-something")
                 try logRepo.create(log: log)
@@ -128,7 +134,10 @@ struct SqlitePersistenceTests {
             func shouldNotInsertMeasurementWithWrongLogReference() throws {
                 let tempOutFileURL = ensureEmptyTempFile(filename: "test4.sqlite")
 
-                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+                let service = try! SQLPersistenceService(
+                    logRepo: SQLiteLogRepo(dbPath: tempOutFileURL),
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: tempOutFileURL)
+                )
 
                 // given
                 print(tempOutFileURL.absoluteString)
@@ -140,8 +149,11 @@ struct SqlitePersistenceTests {
             @Test("Should throw error when appending same measurement twice")
             func shouldThrowErrorWhenAppendingExisting() async throws {
                 let tempOutFileURL = ensureEmptyTempFile(filename: "test5.sqlite")
-                let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
                 let logRepo = try! SQLiteLogRepo(dbPath: tempOutFileURL)
+                let service = try! SQLPersistenceService(
+                    logRepo: logRepo,
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: tempOutFileURL)
+                )
 
                 let log = CarbonLog(id: "id-55")
                 try logRepo.create(log: log)
@@ -171,7 +183,11 @@ struct SqlitePersistenceTests {
             @Test("Should persist and load empty log")
             func shouldPersistLoadEmptyLog() async throws {
                 let fileUrl = ensureEmptyTempFile(filename: "test-5.sqlite")
-                let service = try SQLitePersistenceService(dbPath: fileUrl)
+
+                let service = try! SQLPersistenceService(
+                    logRepo: SQLiteLogRepo(dbPath: fileUrl),
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: fileUrl)
+                )
 
                 let log = CarbonLog(id: "my-log")
                 // when
@@ -185,7 +201,10 @@ struct SqlitePersistenceTests {
             @Test("Should persist and load log with multiple measurements")
             func shouldPersistLoadLogWithMultipleMeasurements() async throws {
                 let fileUrl = ensureEmptyTempFile(filename: "test-6.sqlite")
-                let service = try SQLitePersistenceService(dbPath: fileUrl)
+                let service = try! SQLPersistenceService(
+                    logRepo: SQLiteLogRepo(dbPath: fileUrl),
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: fileUrl)
+                )
                 let log = CarbonLog(with: [cm1, cm2], id: "my-log")
 
                 // when
@@ -200,7 +219,10 @@ struct SqlitePersistenceTests {
             func shouldUpdateLogWithMultipleMeasurements() async throws {
                 let fileUrl =
                     ensureEmptyTempFile(filename: "test-update-multuple-measurements.sqlite")
-                let service = try SQLitePersistenceService(dbPath: fileUrl)
+                let service = try! SQLPersistenceService(
+                    logRepo: SQLiteLogRepo(dbPath: fileUrl),
+                    measurementRepo: SQLiteMeasurementRepo(dbPath: fileUrl)
+                )
                 let log = CarbonLog(with: [cm1, cm2], id: "my-log")
                 try await service.persist(log: log)
                 var persistedLog = try #require(await service.load(id: log.id))
