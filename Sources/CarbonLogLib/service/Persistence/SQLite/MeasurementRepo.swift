@@ -10,11 +10,6 @@ public protocol MeasurementRepo {
     func delete(forLogId logId: String) throws
 }
 
-struct CarbonMeasurementEntity {
-    let measurement: CarbonMeasurement
-    let logId: String
-}
-
 private let tableName: String = "CarbonMeasurement"
 private enum EntityCol: String, CaseIterable {
     case id
@@ -179,6 +174,9 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
 
         statement.bind(text: logId, atPos: 1)
         let status = statement.executeStep()
-        if status != .Done { throw SQLError.SQLiteErrorWithStatus("Could not delete rows", status) }
+        if status != .Done { throw SQLError.SQLiteErrorWithStatus(
+            "Could not delete measurement rows",
+            status
+        ) }
     }
 }

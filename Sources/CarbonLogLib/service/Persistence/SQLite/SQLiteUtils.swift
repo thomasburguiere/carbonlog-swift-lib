@@ -55,7 +55,7 @@ struct SQLiteStatement {
     }
 }
 
-// TODO: https://www.kodeco.com/6620276-sqlite-with-swift-tutorial-getting-started?page=3#toc-anchor-014
+// https://www.kodeco.com/6620276-sqlite-with-swift-tutorial-getting-started?page=3#toc-anchor-014
 
 struct SQLiteDB {
     fileprivate let dbPointer: OpaquePointer?
@@ -84,7 +84,8 @@ struct SQLiteDB {
     }
 
     func tableExists(tableName: String) throws -> Bool {
-        let statementString = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
+        let statementString =
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';"
 
         let tableExistsStatement: SQLiteStatement = try! prepareStament(statement: statementString)
         defer { tableExistsStatement.finalize() }
@@ -92,7 +93,10 @@ struct SQLiteDB {
         tableExistsStatement.bind(text: tableName, atPos: 1)
         let execResult = tableExistsStatement.executeStep()
         guard execResult == .Done || execResult == .Row else {
-            throw SQLError.SQLiteErrorWithStatus("Coulnt check if table \(tableName) exists", execResult)
+            throw SQLError.SQLiteErrorWithStatus(
+                "Coulnt check if table \(tableName) exists",
+                execResult
+            )
         }
 
         let count = tableExistsStatement.getRowIntCell(atPos: 0)
@@ -105,7 +109,10 @@ struct SQLiteDB {
 
         let prepareReturnCode = sqlite3_prepare_v2(dbPointer, statement, -1, &statementPointer, nil)
         guard prepareReturnCode == SQLITE_OK else {
-            throw SQLError.SQLiteErrorWithStatus("Could not prepare statement: \(statement)", SQLiteStatus.of(prepareReturnCode))
+            throw SQLError.SQLiteErrorWithStatus(
+                "Could not prepare statement: \(statement)",
+                SQLiteStatus.of(prepareReturnCode)
+            )
         }
 
         return SQLiteStatement(backingPointer: statementPointer)
@@ -116,7 +123,10 @@ struct SQLiteDB {
         defer { statementPointer.finalize() }
 
         let executeReturnCode = statementPointer.executeStep()
-        guard executeReturnCode == .Done else { throw SQLError.SQLiteErrorWithStatus("Could not execute statement: \(statement)", executeReturnCode) }
+        guard executeReturnCode == .Done else { throw SQLError.SQLiteErrorWithStatus(
+            "Could not execute statement: \(statement)",
+            executeReturnCode
+        ) }
     }
 
     static func fromPath(filepath: String) throws -> SQLiteDB {
