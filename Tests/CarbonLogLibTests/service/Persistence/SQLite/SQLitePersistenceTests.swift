@@ -73,7 +73,7 @@ struct SqlitePersistenceTests {
                 let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
 
                 let log = CarbonLog(id: "another-log")
-                try! await service.insert(log: log)
+                try! await service.persist(log: log)
 
                 // when
                 try service.persist(measurement: cm2, forLogId: log.id)
@@ -96,9 +96,10 @@ struct SqlitePersistenceTests {
                 let tempOutFileURL = ensureEmptyTempFile(filename: "test3.sqlite")
 
                 let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+                let logRepo = try! SQLiteLogRepo(dbPath: tempOutFileURL)
 
                 let log = CarbonLog(id: "log-something")
-                try! await service.insert(log: log)
+                try logRepo.create(log: log)
 
                 // given
                 try service.persist(measurement: cm2, forLogId: log.id)
@@ -139,9 +140,10 @@ struct SqlitePersistenceTests {
             func shouldThrowErrorWhenAppendingExisting() async throws {
                 let tempOutFileURL = ensureEmptyTempFile(filename: "test5.sqlite")
                 let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
+                let logRepo = try! SQLiteLogRepo(dbPath: tempOutFileURL)
 
                 let log = CarbonLog(id: "id-55")
-                try await service.insert(log: log)
+                try logRepo.create(log: log)
                 try await service.append(measurement: cm2, toLogWithId: log.id)
 
                 await #expect(throws: PersistenceError

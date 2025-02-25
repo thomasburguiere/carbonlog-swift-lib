@@ -131,7 +131,9 @@ struct SQLiteDB {
 
     static func fromPath(filepath: String) throws -> SQLiteDB {
         var db: OpaquePointer?
-        guard sqlite3_open(filepath, &db) == SQLITE_OK else { throw SQLError.CannotOpenDb }
+        guard sqlite3_open(filepath, &db) == SQLITE_OK else {
+            throw SQLError.CannotOpenDb(filepath)
+        }
         return SQLiteDB(dbPointer: db!)
     }
 }

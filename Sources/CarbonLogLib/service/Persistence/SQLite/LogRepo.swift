@@ -27,6 +27,10 @@ struct SQLiteLogRepo: LogRepo {
         try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
     }
 
+    init(dbPath: URL) throws {
+        db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
+    }
+
     func create(log: CarbonLog) throws {
         let query = """
             INSERT INTO \(tableName) (
