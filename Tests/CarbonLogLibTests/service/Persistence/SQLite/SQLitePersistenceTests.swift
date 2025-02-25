@@ -93,7 +93,8 @@ struct SqlitePersistenceTests {
 
             @Test("should update single measurement")
             func shouldUpdateMeasurement() async throws {
-                let tempOutFileURL = ensureEmptyTempFile(filename: "test3.sqlite")
+                let tempOutFileURL =
+                    ensureEmptyTempFile(filename: "test-updated-measurement.sqlite")
 
                 let service = try! SQLitePersistenceService(dbPath: tempOutFileURL)
                 let logRepo = try! SQLiteLogRepo(dbPath: tempOutFileURL)

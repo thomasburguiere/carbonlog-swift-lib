@@ -22,13 +22,9 @@ private let createTableString: String = """
 struct SQLiteLogRepo: LogRepo {
     let db: SQLiteDB
 
-    init(db: SQLiteDB) throws {
-        self.db = db
-        try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
-    }
-
     init(dbPath: URL) throws {
         db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
+        try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
     }
 
     func create(log: CarbonLog) throws {
