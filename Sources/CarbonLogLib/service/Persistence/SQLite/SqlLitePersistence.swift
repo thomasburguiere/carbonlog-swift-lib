@@ -2,13 +2,13 @@ import Foundation
 
 public enum SQLError: Error, Equatable {
     case CouldNotPrepareStatement
-    case InconsistentRow
-    case CannotOpenDb
+    case CannotOpenDb(String)
     case DuplicateTable(String)
     case SQLiteErrorWithStatus(String, SQLiteStatus)
 }
 
 public enum PersistenceError: Error, Equatable {
+    case InconsistentContent
     case inconsistentOperation(String? = nil)
 }
 
@@ -32,10 +32,6 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         try log.measurements.forEach { measurement in
             try measurementRepo.create(measurement: measurement, forLogId: log.id)
         }
-    }
-
-    func insert(log: CarbonLog) async throws {
-        try logRepo.create(log: log)
     }
 
     public func load(id: String) async throws -> CarbonLog? {
@@ -63,11 +59,11 @@ public struct SQLitePersistenceService: CarbonLogPersistenceService {
         }
     }
 
-    public func delete(measurement: CarbonMeasurement) throws {
+    func delete(measurement: CarbonMeasurement) throws {
         try measurementRepo.delete(measurement: measurement)
     }
 
-    public func load(measurementId id: String) throws -> CarbonMeasurement? {
+    func load(measurementId id: String) throws -> CarbonMeasurement? {
         return try measurementRepo.read(measurementId: id)
     }
 }

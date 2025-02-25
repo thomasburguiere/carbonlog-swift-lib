@@ -36,7 +36,7 @@ private extension SQLiteStatement {
         let comment: String? = getRowTextCell(atPos: 3)
 
         guard let date, let carbonKg, let id else {
-            throw SQLError.InconsistentRow
+            throw PersistenceError.InconsistentContent
         }
         return CarbonMeasurement(kg: carbonKg, at: date, comment: comment, id: id)
     }
@@ -61,6 +61,10 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
     init(db: SQLiteDB) throws {
         self.db = db
         try db.createTableIfNotExist(tableName, withCreateQuery: createTableString)
+    }
+
+    init(dbPath: URL) throws {
+        db = try SQLiteDB.fromPath(filepath: dbPath.absoluteString)
     }
 
     func read(measurementId id: String) throws -> CarbonMeasurement? {
@@ -174,9 +178,11 @@ struct SQLiteMeasurementRepo: MeasurementRepo {
 
         statement.bind(text: logId, atPos: 1)
         let status = statement.executeStep()
-        if status != .Done { throw SQLError.SQLiteErrorWithStatus(
-            "Could not delete measurement rows",
-            status
-        ) }
+        if status != .Done {
+            throw SQLError.SQLiteErrorWithStatus(
+                "Could not delete measurement rows",
+                status
+            )
+        }
     }
 }
