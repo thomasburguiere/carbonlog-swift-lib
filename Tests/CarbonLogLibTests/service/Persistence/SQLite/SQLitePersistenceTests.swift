@@ -121,7 +121,6 @@ struct SqlitePersistenceTests {
                     comment: "updated comment",
                     id: cm2.id
                 )
-                print(tempOutFileURL)
                 try service.persist(measurement: updatedMeasurement, forLogId: log.id)
                 let persistedUpdated = try #require(try service.load(measurementId: "id-2"))
 
@@ -140,7 +139,6 @@ struct SqlitePersistenceTests {
                 )
 
                 // given
-                print(tempOutFileURL.absoluteString)
                 #expect(throws: Error.self) {
                     try service.persist(measurement: cm2, forLogId: "NOOP")
                 }
